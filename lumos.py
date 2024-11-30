@@ -1,7 +1,7 @@
 from litellm import completion
 import json
 
-def call_ai(model, messages, response_format):
+def call_ai(model, messages, response_format=None):
     '''
     Wrapper around litellm completion with additionl utils.
     '''
