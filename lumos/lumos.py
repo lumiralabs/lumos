@@ -1,6 +1,6 @@
 from litellm import completion
 import json
-
+from typing import Any
 def call_ai(messages, response_format, model="gpt-4o-mini"):
     '''
     Wrapper around litellm completion
@@ -15,3 +15,10 @@ def call_ai(messages, response_format, model="gpt-4o-mini"):
     return response_format.model_validate(resp_dict)
 
 
+
+def get_knn(query: str, vec_db: Any, k: int = 10):
+    '''
+    Get k-nearest neighbors chunks for a query and a given vector store
+    '''
+    # TODO (jay): implement
+    pass

@@ -7,11 +7,15 @@ authors = [
 description = "A package for AI interactions"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.115.5",
     "litellm",
     "pydantic",
+    "uvicorn>=0.32.1",
 ]
 
 [tool.uv]
 dev-dependencies = [
+    "ipykernel>=6.29.5",
     "pre-commit>=4.0.1",
+    "pytest>=8.3.3",
 ]
