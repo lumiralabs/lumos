@@ -10,3 +10,8 @@ dependencies = [
     "litellm",
     "pydantic",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "pre-commit>=4.0.1",
+]
