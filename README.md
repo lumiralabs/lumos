@@ -1,7 +1,7 @@
 # lumos
 Common utils across lumira labs
 
-## Install Lumos
+## Install
 ```
 uv pip install git+https://github.com/lumiralabs/lumos
 ```
