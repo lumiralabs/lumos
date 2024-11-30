@@ -1,7 +1,13 @@
 # lumos
 Common utils across lumira labs
 
+## Install Lumos
+```
+uv pip install git+https://github.com/lumiralabs/lumos
+```
 
+
+## Usage
 ```python
 from lumos import lumos
 from pydantic import BaseModel
