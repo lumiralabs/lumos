@@ -1,9 +1,9 @@
 from litellm import completion
 import json
 
-def call_ai(model, messages, response_format=None):
+def call_ai(messages, response_format, model="gpt-4o-mini"):
     '''
-    Wrapper around litellm completion with additionl utils.
+    Wrapper around litellm completion
     '''
     response = completion(
       model=model,

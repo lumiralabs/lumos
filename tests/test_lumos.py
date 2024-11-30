@@ -1,5 +1,5 @@
 def test_call_ai():
-    from lumos import call_ai
+    from lumos.lumos import call_ai
     from pydantic import BaseModel
     class Response(BaseModel):
         steps: list[str]
