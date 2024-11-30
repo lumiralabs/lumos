@@ -1,0 +1,12 @@
+[project]
+name = "lumos"
+version = "0.0.1"
+authors = [
+    { name = "Arun Patro", email = "arun@lumiralabs.com" },
+]
+description = "A package for AI interactions"
+requires-python = ">=3.12"
+dependencies = [
+    "litellm",
+    "pydantic",
+]
