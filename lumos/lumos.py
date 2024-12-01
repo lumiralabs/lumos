@@ -2,7 +2,7 @@ from litellm import completion
 import json
 from typing import Any, TypeVar 
 from pydantic import BaseModel
-
+from functools import lru_cache
 T = TypeVar('T', bound=BaseModel)
 
 def construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
@@ -18,6 +18,7 @@ def construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> l
     return chat_messages
 
 
+@lru_cache(maxsize=1000)
 def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
     Make an AI completion call using litellm, with support for few-shot examples.
