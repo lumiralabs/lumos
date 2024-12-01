@@ -1,8 +1,8 @@
 from litellm import completion
 import json
-from typing import Any, TypeVar 
+from typing import Any, TypeVar
 from pydantic import BaseModel
-from functools import lru_cache
+from lumos.utils import cache_middleware
 T = TypeVar('T', bound=BaseModel)
 
 def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
@@ -14,14 +14,10 @@ def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> 
     for query, response in examples:
         chat_messages.append({"role": "user", "content": query})
         chat_messages.append({"role": "assistant", "content": response.model_dump_json()})
-        
     return chat_messages
 
 
-@lru_cache(maxsize=1000, typed=True)
-def _cache_key(messages):
-    """fixes unable to hash list errors """
-    return json.dumps(messages, sort_keys=True)
+@cache_middleware
 def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
     Make an AI completion call using litellm, with support for few-shot examples.
@@ -38,7 +34,7 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: 
 
     Example:
         from pydantic import BaseModel
-        
+
         class MathResponse(BaseModel):
             answer: int
             explanation: str
@@ -58,6 +54,7 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: 
         response = call_ai(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
     '''
+    # Prepare messages with examples if provided
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
@@ -66,17 +63,17 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: 
         _messages = [messages[0]] + example_messages + [messages[1]]
     else:
         _messages = messages
-        
+
+    # Make the AI completion call
     response = completion(
-      model=model,
-      messages=_messages,
-      response_format=response_format
+        model=model,
+        messages=_messages,
+        response_format=response_format
     )
     resp_json = response.choices[0]['message']['content']
     resp_dict = json.loads(resp_json)
-    return response_format.model_validate(resp_dict)
-
-
+    result = response_format.model_validate(resp_dict)
+    return result
 
 def get_knn(query: str, vec_db: Any, k: int = 10):
     '''
