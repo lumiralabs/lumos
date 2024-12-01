@@ -20,6 +20,7 @@ def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> 
 
 @lru_cache(maxsize=1000, typed=True)
 def _cache_key(messages):
+    """fixes unable to hash list errors """
     return json.dumps(messages, sort_keys=True)
 def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
