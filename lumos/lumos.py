@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from functools import lru_cache
 T = TypeVar('T', bound=BaseModel)
 
-def construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
+def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
     '''
     Construct a list of chat messages from a list of examples.
     Examples are pairs of query: response. Response should be the pydantic model 
@@ -18,7 +18,9 @@ def construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> l
     return chat_messages
 
 
-@lru_cache(maxsize=1000)
+@lru_cache(maxsize=1000, typed=True)
+def _cache_key(messages):
+    return json.dumps(messages, sort_keys=True)
 def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
     Make an AI completion call using litellm, with support for few-shot examples.
@@ -56,7 +58,7 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: 
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
     '''
     if examples:
-        example_messages = construct_chat_examples(examples, response_format)
+        example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
         assert messages[0]["role"] == "system", "First message must be system message when using examples"
         assert messages[1]["role"] == "user", "Second message must be user message when using examples"
