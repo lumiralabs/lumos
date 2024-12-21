@@ -147,8 +147,17 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
 
 
 
-def get_embedding(text: str, model: str = "text-embedding-3-small"):
-    return embedding(model, text)
+def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
+    if isinstance(text, str):
+        _text = [text]
+    else:
+        _text = text
+    
+    embeddings = embedding(model, _text).json()['data']
+    if isinstance(text, str):
+        return embeddings[0]['embedding']
+    else:
+        return [e['embedding'] for e in embeddings]
 
 def transcribe(file, model: str = "whisper-1"):
     return transcription(file, model)
