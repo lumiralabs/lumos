@@ -1,4 +1,4 @@
-from litellm import completion, acompletion
+from litellm import completion, acompletion, embedding
 import json
 from typing import Any, TypeVar
 from pydantic import BaseModel
@@ -132,6 +132,10 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
     resp_dict = json.loads(resp_json)
     result = response_format.model_validate(resp_dict)
     return result
+
+
+def get_embedding(text: str, model: str = "text-embedding-3-small"):
+    return embedding(model, text)
 
 def get_knn(query: str, vec_db: Any, k: int = 10):
     '''

@@ -642,7 +642,7 @@ wheels = [
 
 [[package]]
 name = "lumos"
-version = "0.0.1"
+version = "0.0.2"
 source = { virtual = "." }
 dependencies = [
     { name = "fastapi" },
@@ -661,8 +661,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.5" },
-    { name = "litellm" },
-    { name = "pydantic" },
+    { name = "litellm", specifier = ">=1.53.1" },
+    { name = "pydantic", specifier = ">=2.10.2" },
     { name = "uvicorn", specifier = ">=0.32.1" },
 ]
 
