@@ -1,9 +1,15 @@
-from litellm import completion, acompletion, embedding
+from litellm import completion, acompletion, embedding, transcription
 import json
 from typing import Any, TypeVar
 from pydantic import BaseModel
 from lumos.utils import cache_middleware
+import io
+import base64
+from structlog import get_logger
+import magic
 T = TypeVar('T', bound=BaseModel)
+
+logger = get_logger(__name__)
 
 def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
     '''
@@ -18,7 +24,7 @@ def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> 
 
 
 @cache_middleware
-def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
+def call_ai(messages: list[dict[str, str]], response_format: type[T] | None = None, examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
     Make an AI completion call using litellm, with support for few-shot examples.
 
@@ -70,13 +76,16 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T], examples: 
         messages=_messages,
         response_format=response_format
     )
-    resp_json = response.choices[0]['message']['content']
-    resp_dict = json.loads(resp_json)
-    result = response_format.model_validate(resp_dict)
-    return result
+    ret = response.choices[0]['message']['content']
+    if response_format:
+        ret_dict = json.loads(ret)
+        ret_obj = response_format.model_validate(ret_dict)
+        return ret_obj
+    
+    return ret
 
 @cache_middleware
-async def call_ai_async(messages: list[dict[str, str]], response_format: type[T], examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
+async def call_ai_async(messages: list[dict[str, str]], response_format: type[T] | None = None, examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
     '''
     Make an AI completion call using litellm, with support for few-shot examples.
 
@@ -102,14 +111,14 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
             {"role": "system", "content": "You are a math helper"},
             {"role": "user", "content": "What is 2+2?"}
         ]
-        response = call_ai(messages, MathResponse)
+        response = await call_ai_async(messages, MathResponse)
 
         # With examples
         add_examples = [
             ("What is 3+3?", MathResponse(answer=6, explanation="3 plus 3 equals 6")),
             ("What is 4+4?", MathResponse(answer=8, explanation="4 plus 4 equals 8"))
         ]
-        response = call_ai(messages, MathResponse, examples=add_examples)
+        response = await call_ai_async(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
     '''
     # Prepare messages with examples if provided
@@ -127,15 +136,64 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
         model=model,
         messages=_messages,
         response_format=response_format
-    )
-    resp_json = response.choices[0]['message']['content']
-    resp_dict = json.loads(resp_json)
-    result = response_format.model_validate(resp_dict)
-    return result
+    )   
+    ret = response.choices[0]['message']['content']
+    if response_format:
+        ret_dict = json.loads(ret)
+        ret_obj = response_format.model_validate(ret_dict)
+        return ret_obj
+    
+    return ret
+
 
 
 def get_embedding(text: str, model: str = "text-embedding-3-small"):
     return embedding(model, text)
+
+def transcribe(file, model: str = "whisper-1"):
+    return transcription(file, model)
+
+async def describe_image(image: bytes, model: str = "gpt-4o-mini"):
+    # Get image format and validate
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format=image.format)
+    img_bytes = img_byte_arr.getvalue()
+
+    # Detect actual mimetype from bytes
+    mime = magic.Magic(mime=True)
+    detected_mime = mime.from_buffer(img_bytes)
+
+    # Validate mimetype
+    allowed_mimes = ['image/png', 'image/jpeg', 'image/webp']
+    if detected_mime not in allowed_mimes:
+        logger.warning(f"Unsupported image mimetype: {detected_mime}")
+        return ""
+
+    # Validate size
+    if len(img_bytes) > 20 * 1024 * 1024:  # 20MB limit
+        logger.warning("Image too large")
+        return ""
+
+    # Encode as base64
+    img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+
+    return await call_ai_async(
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Describe this image in detail:"},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{detected_mime};base64,{img_base64}"
+                        },
+                    },
+                ],
+            }
+        ],
+        model=model
+    )
 
 def get_knn(query: str, vec_db: Any, k: int = 10):
     '''
