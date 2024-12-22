@@ -139,7 +139,7 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
         response_format=response_format
     )   
     cost = response._hidden_params['response_cost']
-    logger.info(cost=cost)
+    logger.info("ai_cost", cost=cost)
     ret = response.choices[0]['message']['content']
     if response_format:
         ret_dict = json.loads(ret)
