@@ -28,6 +28,11 @@ lumos.call_ai(
 )
 ```
 
+```python
+lumos.get_embedding("hello world")
+#[0.12, ..., ..., 0.34]
+```
+
 
 ## Deploy
 We also expose lumos as a server
