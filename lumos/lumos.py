@@ -7,7 +7,7 @@ import base64
 import structlog
 import magic
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger()
 
 T = TypeVar('T', bound=BaseModel)
 
