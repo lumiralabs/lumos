@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, create_model
 from typing import Literal, Any, Callable
-from lumos.lumos import call_ai
+import lumos
 from functools import wraps
 
 app = FastAPI(title="Lumos API")
@@ -21,14 +21,18 @@ def require_api_key(func: Callable):
     return wrapper
 
 class ChatMessage(BaseModel):
-    role: str = Literal["system", "user", "assistant"]
+    role: str = Literal["system", "user", "assistant", "developer"]
     content: str
 
 class AIRequest(BaseModel):
     messages: list[ChatMessage]
-    response_schema: dict[str, Any]  # JSON schema format
+    response_schema: dict[str, Any] | None  # JSONschema
     examples: list[tuple[str, dict[str, Any]]] | None = None
     model: str | None = "gpt-4o-mini"
+    
+class EmbedRequest(BaseModel):
+    inputs: str | list[str]
+    model: str | None = "text-embedding-3-small"
 
 def _json_schema_to_pydantic_types(schema: dict[str, Any]) -> dict[str, tuple[type, Any]]:
     """Convert JSON schema types to Python/Pydantic types"""
@@ -56,21 +60,24 @@ def _json_schema_to_pydantic_types(schema: dict[str, Any]) -> dict[str, tuple[ty
 @app.post("/gen")
 @require_api_key
 async def create_chat_completion(request: Request, ai_request: AIRequest):
+    """
+    Examples can only be used if response_schema is provided, and are in json format
+    """
     try:
-        # Convert JSON schema to Pydantic field types
-        field_types = _json_schema_to_pydantic_types(ai_request.response_schema)
-        
-        # Dynamically create a Pydantic model
-        ResponseModel = create_model(
-            'DynamicResponseModel',
-            **field_types
-        )
-        
-        # Convert examples if provided
+        ResponseModel = None
         formatted_examples = None
+        
+        # Convert JSON schema to Pydantic field types
+        if ai_request.response_schema:
+            field_types = _json_schema_to_pydantic_types(ai_request.response_schema)
+            ResponseModel = create_model(
+                'DynamicResponseModel',
+                **field_types
+            )
+        
         if ai_request.examples:
             formatted_examples = [
-                (query, ResponseModel(**response))
+                (query, ResponseModel.model_validate(response))
                 for query, response in ai_request.examples
             ]
         
@@ -78,7 +85,7 @@ async def create_chat_completion(request: Request, ai_request: AIRequest):
         messages = [msg.model_dump() for msg in ai_request.messages]
         
         # Call the AI function
-        result = call_ai(
+        result = await lumos.call_ai_async(
             messages=messages,
             response_format=ResponseModel,
             examples=formatted_examples,
@@ -89,6 +96,11 @@ async def create_chat_completion(request: Request, ai_request: AIRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/embed")
+@require_api_key
+async def embed(request: Request, embed_request: EmbedRequest):
+    return lumos.get_embedding(embed_request.inputs, embed_request.model)
 
 @app.get("/healthz")
 @require_api_key

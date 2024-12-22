@@ -3,13 +3,14 @@ import json
 from typing import Any, TypeVar
 from pydantic import BaseModel
 from lumos.utils import cache_middleware
-import io
 import base64
-from structlog import get_logger
+import structlog
 import magic
+
+logger = structlog.get_logger(__name__)
+
 T = TypeVar('T', bound=BaseModel)
 
-logger = get_logger(__name__)
 
 def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
     '''
@@ -137,6 +138,8 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
         messages=_messages,
         response_format=response_format
     )   
+    cost = response._hidden_params['response_cost']
+    logger.info(cost=cost)
     ret = response.choices[0]['message']['content']
     if response_format:
         ret_dict = json.loads(ret)
@@ -162,29 +165,27 @@ def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
 def transcribe(file, model: str = "whisper-1"):
     return transcription(file, model)
 
-async def describe_image(image: bytes, model: str = "gpt-4o-mini"):
-    # Get image format and validate
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format=image.format)
-    img_bytes = img_byte_arr.getvalue()
-
-    # Detect actual mimetype from bytes
-    mime = magic.Magic(mime=True)
-    detected_mime = mime.from_buffer(img_bytes)
-
-    # Validate mimetype
-    allowed_mimes = ['image/png', 'image/jpeg', 'image/webp']
-    if detected_mime not in allowed_mimes:
-        logger.warning(f"Unsupported image mimetype: {detected_mime}")
-        return ""
-
+async def describe_image(image: bytes, model: str = "gpt-4o-mini") -> str | None:
+    # Validate image
+    if not isinstance(image, bytes):
+        logger.warning("Image must be bytes")
+        return None
+        
     # Validate size
-    if len(img_bytes) > 20 * 1024 * 1024:  # 20MB limit
-        logger.warning("Image too large")
-        return ""
+    if len(image) > 20 * 1024 * 1024:  # 20MB limit
+        logger.warning("Image too large") 
+        return None
+
+    # Detect mimetype
+    mime = magic.Magic(mime=True)
+    detected_mime = mime.from_buffer(image)
+    
+    if detected_mime not in ['image/png', 'image/jpeg', 'image/webp']:
+        logger.warning(f"Unsupported image mimetype: {detected_mime}")
+        return None
 
     # Encode as base64
-    img_base64 = base64.b64encode(img_bytes).decode("utf-8")
+    img_base64 = base64.b64encode(image).decode("utf-8")
 
     return await call_ai_async(
         messages=[
