@@ -13,7 +13,7 @@ from typing import Any
 import copy
 from unstructured.partition.auto import partition
 from unstructured.chunking.title import chunk_by_title
-from lumos import lumos
+from lumos.lumos import call_ai_async
 from pydantic import BaseModel, Field
 import asyncio
 
@@ -118,7 +118,7 @@ def extract_pdf_metadata(pdf_path: str) -> PDFMetadata:
             toc=doc.get_toc(),
         )
 
-
+# @profile
 def get_leaf_sections(section) -> list[tuple[str, list]]:
     """Get all leaf sections (those without subsections) and their elements."""
     results = []
@@ -294,16 +294,19 @@ def parse(pdf_path: str) -> list[dict]:
     metadata = extract_pdf_metadata(pdf_path)
     sections = get_section_hierarchy(pdf_path)
     chapters = extract_chapters(sections)
-
+    
     book_elements = partition(
         filename=pdf_path,
         # filename="./.dev/output/asyncio.md",
         api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
         partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
         partition_by_api=True,
+        strategy="fast",
         # include_page_breaks=True,
         include_metadata=True,
     )
+    
+    print(f"Finished partitioning book elements: {len(book_elements)=}")
 
     # Clean elements
     book_elements = [
@@ -321,39 +324,53 @@ def parse(pdf_path: str) -> list[dict]:
         new_chapters.append(new_chapter)
 
     book = Book(metadata=metadata, sections=new_chapters)
+    
+    book.toc()
 
     # this is to benchmark the lesson generation (in async gather)
-    # get_lessons(book_dict)
+    get_lessons(book)
     
-    chunks = book.flatten_chunks(dict=True)
+    # chunks = book.flatten_chunks(dict=True)
     
-    # cool view of the chunks
-    console = Console()
-    console.print()
-    for i, chunk in enumerate(chunks):
-        console.print(Panel(
-            f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
-            f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
-            f"{chunk['text']}",
-            expand=True
-        ))
+    # # cool view of the chunks
+    # console = Console()
+    # console.print()
+    # for i, chunk in enumerate(chunks):
+    #     console.print(Panel(
+    #         f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
+    #         f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
+    #         f"{chunk['text']}",
+    #         expand=True
+    #     ))
         
-    return chunks
-    
+    # return chunks
 
 async def gather_tasks(leaf_sections) -> list['LessonContent']:
-    tasks = [get_lesson_content(title, content) for title, content in leaf_sections]
+    sem = asyncio.Semaphore(50)
+    
+    async def bounded_get_lesson(title: str, content: str) -> 'LessonContent':
+        async with sem:
+            return await get_lesson_content(title, content)
+    
+    tasks = [bounded_get_lesson(title, content) for title, content in leaf_sections]
     return await asyncio.gather(*tasks)
 
+
+# async def gather_tasks(leaf_sections) -> list['LessonContent']:
+#     tasks = [get_lesson_content(title, content) for title, content in leaf_sections]
+#     return await asyncio.gather(*tasks)
+
 # @profile
-def get_lessons(book_dict: dict) -> None:
+def get_lessons(book: Book) -> None:
+    book_dict = book.model_dump()
+    recur_to_dict(book_dict)
     leaf_sections = []
     for section in book_dict['sections']:
         leaf_sections.extend(get_leaf_sections(section))
     loop = asyncio.get_event_loop()
     results = loop.run_until_complete(gather_tasks(leaf_sections))
     console = Console()
-    for (title, content), lesson in zip(leaf_sections, results):
+    for (title, _), lesson in zip(leaf_sections, results):
         console.print()
         console.print(Panel(
             f"[bold magenta]{title}[/bold magenta]\n\n"
@@ -376,12 +393,12 @@ async def get_lesson_content(title, content):
     {content}
     </Content>""".format(title=title, content=content)
 
-    ret = await lumos.call_ai_async(
+    ret = await call_ai_async(
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that will help me creating insightful lessons and summaries for technical books. You will be provided with a section of a book and you will need to generate a summary of the content. Be concise and to the point. "},
+            {"role": "system", "content": "You are a helpful assistant and tutot that will help me creating insightful lessons and summaries for technical books. You will be provided with a section of a book and you will need to generate a summary of the content. Be concise and to the point."},
             {"role": "user", "content": input_str},
         ],
-        model="gpt-4o",
+        model="gpt-4o-mini",
         response_format=LessonContent,
     )
     return ret

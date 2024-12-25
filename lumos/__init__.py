@@ -4,8 +4,8 @@ from lumos.lumos import (
     get_embedding,
     transcribe,
     describe_image,
-    get_knn
 )
+from lumos import book_parser
 
 __all__ = [
     "call_ai",
@@ -13,5 +13,5 @@ __all__ = [
     "get_embedding",
     "transcribe",
     "describe_image",
-    "get_knn"
+    "book_parser",
 ] 
