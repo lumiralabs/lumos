@@ -312,21 +312,22 @@ def parse(pdf_path: str) -> list[dict]:
         if element.to_dict()["type"] not in ["Footer", "PageBreak"]
     ]
 
+    # Partition recursively into subsections
     new_chapters = []
     for chapter in chapters:
         chapter.elements = get_elements_for_chapter(book_elements, chapter)
-        new_chapters.append(partition_elements(chapter))
+        new_chapter = partition_elements(chapter)
+        add_chunks(new_chapter)
+        new_chapters.append(new_chapter)
 
     book = Book(metadata=metadata, sections=new_chapters)
 
-    for section in book.sections:
-        add_chunks(section)
-
-    # book_dict = book.model_dump()
-    # recur_to_dict(book_dict)
-    
+    # this is to benchmark the lesson generation (in async gather)
     # get_lessons(book_dict)
+    
     chunks = book.flatten_chunks(dict=True)
+    
+    # cool view of the chunks
     console = Console()
     console.print()
     for i, chunk in enumerate(chunks):
@@ -336,7 +337,8 @@ def parse(pdf_path: str) -> list[dict]:
             f"{chunk['text']}",
             expand=True
         ))
-    # return chunks
+        
+    return chunks
     
 
 async def gather_tasks(leaf_sections) -> list['LessonContent']:
