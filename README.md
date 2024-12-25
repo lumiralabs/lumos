@@ -105,3 +105,29 @@ curl -X POST "http://localhost:8000/gen" \
   "model": "gpt-4o-mini"
 }'
 ```
+
+or use the python client:
+```python
+from lumos import LumosClient
+
+lumos = LumosClient("http://localhost:8000", "12345678")
+
+await lumos.call_ai_async(
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant"},
+        {"role": "user", "content": "What is the capital of France?"}
+    ],
+    response_schema={
+        "type": "object",
+        "properties": {
+            "final_answer": {
+                "title": "Final Answer",
+                "type": "string"
+            }
+        },
+        "required": ["final_answer"],
+        "title": "Response"
+    },
+    model="gpt-4o-mini"
+)
+```
