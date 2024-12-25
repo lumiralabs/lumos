@@ -7,3 +7,4 @@ build/
 _dev.ipynb
 uv.lock
 book-parser/
+*.DS_Store

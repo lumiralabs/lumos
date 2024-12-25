@@ -45,10 +45,13 @@ class Book(BaseModel):
             elements.extend(flatten_section_elements(section))
         return elements
 
-    def flatten_chunks(self):
+    def flatten_chunks(self, dict=True):
         chunks = []
         for section in self.sections:
             chunks.extend(flatten_section_chunks(section))
+        
+        if dict:
+            return [chunk.to_dict() for chunk in chunks]
         return chunks
 
     def toc(self, level: int | None = None):
@@ -59,6 +62,7 @@ class Book(BaseModel):
         recur_to_dict(book_dict)
         
         return json.dumps(book_dict, indent=2)
+    
 
 def list_2_dict(lst):
     return [item.to_dict() for item in lst]
@@ -188,7 +192,7 @@ def extract_toc(sections: list[Section]) -> Section:
 
 
 def extract_chapters(sections: list[Section]) -> list[Section]:
-    chapter_pattern = re.compile(r"^chapter \d+", re.IGNORECASE)
+    chapter_pattern = re.compile(r"^chapter \d+(?!.*appendix).*$", re.IGNORECASE)
     chapters = []
 
     for section in sections:
@@ -283,7 +287,10 @@ def list_chapters(pdf_path: str) -> None:
         console.print("[bold red]No chapters found.[/bold red]")
 
 # @profile
-def parse(pdf_path: str) -> None:
+def parse(pdf_path: str) -> list[dict]:
+    """
+    Returns a list of all the chunks in the book.
+    """
     metadata = extract_pdf_metadata(pdf_path)
     sections = get_section_hierarchy(pdf_path)
     chapters = extract_chapters(sections)
@@ -315,13 +322,24 @@ def parse(pdf_path: str) -> None:
     for section in book.sections:
         add_chunks(section)
 
-    book_dict = book.model_dump()
-    recur_to_dict(book_dict)
+    # book_dict = book.model_dump()
+    # recur_to_dict(book_dict)
     
-    get_lessons(book_dict)
+    # get_lessons(book_dict)
+    chunks = book.flatten_chunks(dict=True)
+    console = Console()
+    console.print()
+    for i, chunk in enumerate(chunks):
+        console.print(Panel(
+            f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
+            f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
+            f"{chunk['text']}",
+            expand=True
+        ))
+    # return chunks
     
 
-async def gather_tasks(leaf_sections) -> None:
+async def gather_tasks(leaf_sections) -> list['LessonContent']:
     tasks = [get_lesson_content(title, content) for title, content in leaf_sections]
     return await asyncio.gather(*tasks)
 
@@ -330,7 +348,8 @@ def get_lessons(book_dict: dict) -> None:
     leaf_sections = []
     for section in book_dict['sections']:
         leaf_sections.extend(get_leaf_sections(section))
-    results = asyncio.run(gather_tasks(leaf_sections))
+    loop = asyncio.get_event_loop()
+    results = loop.run_until_complete(gather_tasks(leaf_sections))
     console = Console()
     for (title, content), lesson in zip(leaf_sections, results):
         console.print()
