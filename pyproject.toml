@@ -1,6 +1,6 @@
 [project]
 name = "lumos"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
     { name = "Arun Patro", email = "arun@lumiralabs.com" },
 ]
