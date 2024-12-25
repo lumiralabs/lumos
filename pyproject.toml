@@ -1,6 +1,6 @@
 [project]
 name = "lumos"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     { name = "Arun Patro", email = "arun@lumiralabs.com" },
 ]
@@ -10,7 +10,9 @@ dependencies = [
     "fastapi>=0.115.5",
     "litellm>=1.53.1",
     "pydantic>=2.10.2",
+    "pymupdf>=1.25.1",
     "python-magic>=0.4.27",
+    "rich>=13.9.4",
     "structlog>=24.4.0",
     "uvicorn>=0.32.1",
 ]
