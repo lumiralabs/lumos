@@ -282,7 +282,7 @@ def list_chapters(pdf_path: str) -> None:
     else:
         console.print("[bold red]No chapters found.[/bold red]")
 
-@profile
+# @profile
 def parse(pdf_path: str) -> None:
     metadata = extract_pdf_metadata(pdf_path)
     sections = get_section_hierarchy(pdf_path)
@@ -325,7 +325,7 @@ async def gather_tasks(leaf_sections) -> None:
     tasks = [get_lesson_content(title, content) for title, content in leaf_sections]
     return await asyncio.gather(*tasks)
 
-@profile
+# @profile
 def get_lessons(book_dict: dict) -> None:
     leaf_sections = []
     for section in book_dict['sections']:
