@@ -13,7 +13,7 @@ from typing import Any
 import copy
 from unstructured.partition.auto import partition
 from unstructured.chunking.title import chunk_by_title
-from lumos.lumos import call_ai_async
+from lumos import lumos
 from pydantic import BaseModel, Field
 import asyncio
 
@@ -348,7 +348,7 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
                 expand=True
             ))
         
-    return chunks
+    # return chunks
 
 async def gather_tasks(leaf_sections) -> list['LessonContent']:
     sem = asyncio.Semaphore(50)
@@ -398,7 +398,7 @@ async def get_lesson_content(title, content):
     {content}
     </Content>""".format(title=title, content=content)
 
-    ret = await call_ai_async(
+    ret = await lumos.call_ai_async(
         messages=[
             {"role": "system", "content": "You are a helpful assistant and tutot that will help me creating insightful lessons and summaries for technical books. You will be provided with a section of a book and you will need to generate a summary of the content. Be concise and to the point."},
             {"role": "user", "content": input_str},
