@@ -6,6 +6,6 @@ dist/
 build/
 _dev.ipynb
 uv.lock
-book-parser/
 *.DS_Store
 lumos/dev/*
+_experimental/
