@@ -19,9 +19,6 @@ dependencies = [
     "uvicorn>=0.32.1",
 ]
 
-[project.scripts]
-book-parser = "lumos.book_parser:main"
-
 [tool.uv]
 dev-dependencies = [
     "ipykernel>=6.29.5",
