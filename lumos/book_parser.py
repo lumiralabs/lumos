@@ -348,7 +348,7 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
                 expand=True
             ))
         
-    # return chunks
+    return chunks
 
 async def gather_tasks(leaf_sections) -> list['LessonContent']:
     sem = asyncio.Semaphore(50)
