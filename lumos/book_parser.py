@@ -16,7 +16,7 @@ from unstructured.chunking.title import chunk_by_title
 from lumos import lumos
 from pydantic import BaseModel, Field
 import asyncio
-
+from typing import Literal
 class Section(BaseModel):
     title: str
     start_page: int
@@ -38,7 +38,10 @@ class PDFMetadata(BaseModel):
 class Book(BaseModel):
     metadata: PDFMetadata
     sections: list[Section]
-
+    
+    def flatten_sections(self, only_leaf: bool = False):
+        return get_sections_flat(self, only_leaf=only_leaf)
+    
     def flatten_elements(self):
         elements = []
         for section in self.sections:
@@ -54,14 +57,14 @@ class Book(BaseModel):
             return [chunk.to_dict() for chunk in chunks]
         return chunks
 
-    def toc(self, level: int | None = None):
-        return view_toc(self.metadata.path, level=level)
+    def toc(self, level: int | None = None, chapters: bool = False):
+        return view_toc(self.metadata.path, level=level, chapters=chapters)
 
-    def to_json(self):
+    def to_dict(self):
         book_dict = self.model_dump()   
         recur_to_dict(book_dict)
         
-        return json.dumps(book_dict, indent=2)
+        return book_dict
     
 
 def list_2_dict(lst):
@@ -233,18 +236,30 @@ def extract_section_text_from_middle(pdf_path: str, section: Section) -> str:
 def print_section_tree(
     sections: list[Section], parent_tree=None, level: int | None = None, current_level=1
 ):
-    for section in sections:
+    # Define colors for different levels
+    level_colors = ["green", "yellow", "white", "cyan", "red"]
+    color = level_colors[(current_level - 1) % len(level_colors)]
+    
+    for i, section in enumerate(sections, 1):
         if level is None or current_level <= level:
+            if parent_tree.label.startswith("("):
+                # Get parent number and append current index
+                parent_number = parent_tree.label.split(" ")[0].strip("()")
+                section_number = f"({parent_number}.{i})"
+            else:
+                # Top level section
+                section_number = f"({i})"
+                
             node = parent_tree.add(
-                f"{section.title} [dim](Pages: {section.start_page}-{section.end_page})"
+                f"[{color}]{section_number} {section.title}[/{color}] [dim italic](Pages: {section.start_page}-{section.end_page})"
             )
             if section.subsections:
                 print_section_tree(section.subsections, node, level, current_level + 1)
 
-
-def print_book_structure(metadata: PDFMetadata, sections: list[Section]) -> None:
+def print_book_structure(book: Book) -> None:
+    metadata = book.metadata
+    sections = book.sections
     console = Console()
-
     # Metadata Panel
     metadata_content = (
         f"[bold blue]Title:[/bold blue] {metadata.title}\n"
@@ -262,32 +277,59 @@ def print_book_structure(metadata: PDFMetadata, sections: list[Section]) -> None
     console.print(tree)
 
 
-def view_toc(pdf_path: str, level: int | None = None) -> None:
-    metadata = extract_pdf_metadata(pdf_path)
+def get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
+    sections = []
+    
+    def flatten_section(section: Section, prefix: str = "", number: str = "") -> dict:
+        content = ""
+        if section.elements:
+            content = "\n\n".join(element.text for element in section.elements)
+        
+        section_dict = {
+            "title": section.title,
+            "level": number if number else "",
+            "start_page": section.start_page,
+            "end_page": section.end_page,
+            "content": content
+        }
+        
+        if only_leaf:
+            if not section.subsections:
+                sections.append(section_dict)
+        else:
+            sections.append(section_dict)
+        
+        if section.subsections:
+            for i, subsection in enumerate(section.subsections, 1):
+                new_number = f"{number}.{i}" if number else str(i)
+                flatten_section(subsection, prefix=section.title, number=new_number)
+    
+    for i, section in enumerate(book.sections, 1):
+        flatten_section(section, number=str(i))
+        
+    return sections
+
+def view_toc(pdf_path: str, level: int | None = None, chapters: bool = False) -> None:
     sections = get_section_hierarchy(pdf_path)
-
-    console = Console()
-    tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
-    print_section_tree(sections, tree, level=level)
-    console.print(tree)
-
-
-def list_chapters(pdf_path: str) -> None:
-    sections = get_section_hierarchy(pdf_path)
-    chapters = extract_chapters(sections)
+    chapters_list = extract_chapters(sections)
 
     console = Console()
     if chapters:
-        console.print("[bold green]Chapters Found:[/bold green]")
-        for chapter in chapters:
-            console.print(
-                f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
-            )
+        if chapters_list:
+            console.print("[bold green]Chapters Found:[/bold green]")
+            for chapter in chapters_list:
+                console.print(
+                    f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
+                )
+        else:
+            console.print("[bold red]No chapters found.[/bold red]")
     else:
-        console.print("[bold red]No chapters found.[/bold red]")
+        tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
+        print_section_tree(sections, tree, level=level)
+        console.print(tree)
 
 # @profile
-def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False) -> list[dict]:
+def parse(pdf_path: str, dev: Literal["partitions", "chunks", "lessons"] | None = None) -> list[dict]:
     """
     Returns a list of all the chunks in the book.
     """
@@ -297,12 +339,10 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
     
     book_elements = partition(
         filename=pdf_path,
-        # filename="./.dev/output/asyncio.md",
         api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
         partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
         partition_by_api=True,
         strategy="fast",
-        # include_page_breaks=True,
         include_metadata=True,
     )
     
@@ -314,7 +354,6 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
         for element in book_elements
         if element.to_dict()["type"] not in ["Footer", "PageBreak"]
     ]
-    
 
     # Partition recursively into subsections
     new_chapters = []
@@ -324,20 +363,17 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
         add_chunks(new_chapter)
         new_chapters.append(new_chapter)
 
-    
     book = Book(metadata=metadata, sections=new_chapters)
-    
-    if partition_only:
-        view_chunks(book.flatten_elements())
-        return
-    book.toc()
-
-    # this is to benchmark the lesson generation (in async gather)
-    # get_lessons(book)
-    
     chunks = book.flatten_chunks(dict=True)
-    if view_chunks:
-        # cool view of the chunks
+    sections = book.flatten_sections(only_leaf=True)
+    
+    if dev == "partitions":
+        rich_view_chunks(book.flatten_elements())
+        return
+    elif dev == "lessons":
+        view_ai_summaries(sections)
+        return
+    elif dev == "chunks":
         console = Console()
         console.print()
         for i, chunk in enumerate(chunks):
@@ -347,8 +383,9 @@ def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False
                 f"{chunk['text']}",
                 expand=True
             ))
+        return
         
-    # return chunks
+    return sections, chunks
 
 async def gather_tasks(leaf_sections) -> list['LessonContent']:
     sem = asyncio.Semaphore(50)
@@ -366,16 +403,11 @@ async def gather_tasks(leaf_sections) -> list['LessonContent']:
 #     return await asyncio.gather(*tasks)
 
 # @profile
-def get_lessons(book: Book) -> None:
-    book_dict = book.model_dump()
-    recur_to_dict(book_dict)
-    leaf_sections = []
-    for section in book_dict['sections']:
-        leaf_sections.extend(get_leaf_sections(section))
+def view_ai_summaries(sections: list[Section]) -> None:
     loop = asyncio.get_event_loop()
-    results = loop.run_until_complete(gather_tasks(leaf_sections))
+    results = loop.run_until_complete(gather_tasks(sections))
     console = Console()
-    for (title, _), lesson in zip(leaf_sections, results):
+    for (title, _), lesson in zip(sections, results):
         console.print()
         console.print(Panel(
             f"[bold magenta]{title}[/bold magenta]\n\n"
@@ -407,106 +439,6 @@ async def get_lesson_content(title, content):
         response_format=LessonContent,
     )
     return ret
-
-def trim_pdf_to_sections(
-    input_pdf_path: str, output_pdf_path: str, sections: list[Section]
-) -> None:
-    """
-    Create a new PDF containing only the pages from the specified sections and save section metadata.
-
-    Args:
-        input_pdf_path: Path to source PDF file
-        output_pdf_path: Path where trimmed PDF will be saved
-        sections: List of sections to keep
-    """
-    # Open source PDF
-    doc = fitz.open(input_pdf_path)
-
-    # Create new PDF for output
-    out_doc = fitz.open()
-
-    # Copy metadata from source to output
-    for key, value in doc.metadata.items():
-        out_doc.set_metadata({key: value})
-
-    # Get all page ranges from sections and create page mapping
-    page_ranges = []
-    old_to_new_page = {}  # Maps original page numbers to new ones
-    new_page_count = 0
-
-    # Keep track of updated section metadata
-    updated_sections = []
-
-    for section in sections:
-        # Convert from 1-based to 0-based page numbers
-        start_idx = section.start_page - 1
-        end_idx = section.end_page - 1
-        page_ranges.append((start_idx, end_idx))
-
-        # Calculate new page numbers for this section
-        new_start_page = new_page_count + 1  # Convert to 1-based
-
-        # Build page number mapping
-        for old_page in range(start_idx, end_idx + 1):
-            old_to_new_page[old_page] = new_page_count
-            new_page_count += 1
-
-        new_end_page = new_page_count  # Already 1-based since we incremented
-
-        # Create updated section with new page numbers
-        updated_section = Section(
-            title=section.title,
-            start_page=new_start_page,
-            end_page=new_end_page,
-            subsections=section.subsections,
-        )
-        updated_sections.append(updated_section)
-
-    # Add pages that fall within any range
-    for page_num in range(doc.page_count):
-        for start_idx, end_idx in page_ranges:
-            if start_idx <= page_num <= end_idx:
-                out_doc.insert_pdf(doc, from_page=page_num, to_page=page_num)
-                break
-
-    # Update and copy table of contents with new page numbers
-    toc = doc.get_toc()
-    if toc:
-        new_toc = []
-        for level, title, page in toc:
-            # Convert to 0-based for lookup
-            zero_based_page = page - 1
-            if zero_based_page in old_to_new_page:
-                # Convert back to 1-based for TOC
-                new_page = old_to_new_page[zero_based_page] + 1
-                new_toc.append([level, title, new_page])
-
-        if new_toc:
-            out_doc.set_toc(new_toc)
-
-    # Save the trimmed PDF
-    out_doc.save(output_pdf_path)
-
-    # Save section metadata
-    metadata_path = output_pdf_path.rsplit(".", 1)[0] + "_metadata.json"
-    with open(metadata_path, "w") as f:
-        json.dump(
-            {
-                "sections": [section.dict() for section in updated_sections],
-                "original_pdf": input_pdf_path,
-                "page_mapping": {
-                    str(k): v for k, v in old_to_new_page.items()
-                },  # Convert keys to strings for JSON
-            },
-            f,
-            indent=2,
-        )
-
-    # Close both documents
-    doc.close()
-    out_doc.close()
-
-    return updated_sections
 
 
 def get_chunks_for_section(chunks, section) -> list[dict]:
@@ -615,6 +547,9 @@ def chunk_elements(elements: list) -> list:
 
 
 def add_chunks(section):
+    """
+    Add chunks recursively to a section and its subsections
+    """
     if section.elements:
         section.chunks = chunk_elements(section.elements)
     if section.subsections:
@@ -622,7 +557,7 @@ def add_chunks(section):
             add_chunks(subsection)
 
 
-def view_chunks(chunks: list[dict | Any]) -> None:
+def rich_view_chunks(chunks: list[dict | Any]) -> None:
     console = Console()
     table = Table(title="Document Chunks", padding=1)
     table.add_column("#", style="cyan")
@@ -647,7 +582,6 @@ def main():
         {
             "toc": view_toc,
             "parse": parse,
-            "chapters": list_chapters,
         }
     )
 
@@ -656,5 +590,7 @@ if __name__ == "__main__":
     main()
 
 # Usage:
-# python book_parser.py toc .dev/data/asyncio/asyncio.pdf 2
-# python book_parser.py chapters .dev/data/asyncio/asyncio.pdf
+# python -m lumos.book_parser toc .dev/data/asyncio/asyncio.pdf 2 --chapters
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=lessons
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=chunks
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=partitions
