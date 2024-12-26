@@ -329,7 +329,7 @@ def view_toc(pdf_path: str, level: int | None = None, chapters: bool = False) ->
         console.print(tree)
 
 # @profile
-def parse(pdf_path: str, dev: Literal["partitions", "chunks", "lessons"] | None = None) -> list[dict]:
+def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lessons"] | None = None) -> list[dict]:
     """
     Returns a list of all the chunks in the book.
     """
@@ -369,6 +369,9 @@ def parse(pdf_path: str, dev: Literal["partitions", "chunks", "lessons"] | None 
     
     if dev == "partitions":
         rich_view_chunks(book.flatten_elements())
+        return
+    elif dev == "sections":
+        rich_view_sections(sections)
         return
     elif dev == "lessons":
         view_ai_summaries(sections)
@@ -576,6 +579,23 @@ def rich_view_chunks(chunks: list[dict | Any]) -> None:
 
     console.print(table)
 
+def rich_view_sections(sections: list[dict]) -> None:
+    console = Console()
+    table = Table(title="Document Sections", padding=1)
+    table.add_column("ID", style="white")
+    table.add_column("Level", style="white") 
+    table.add_column("Title", style="yellow")
+    table.add_column("Content", style="green", no_wrap=False)
+
+    for i, section in enumerate(sections, 1):
+        table.add_row(
+            str(i),
+            section["level"],
+            section["title"],
+            section["content"][:200] + "..." if len(section["content"]) > 200 else section["content"]
+        )
+
+    console.print(table)
 
 def main():
     fire.Fire(
