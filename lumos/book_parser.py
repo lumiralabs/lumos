@@ -287,7 +287,7 @@ def list_chapters(pdf_path: str) -> None:
         console.print("[bold red]No chapters found.[/bold red]")
 
 # @profile
-def parse(pdf_path: str) -> list[dict]:
+def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False) -> list[dict]:
     """
     Returns a list of all the chunks in the book.
     """
@@ -314,6 +314,7 @@ def parse(pdf_path: str) -> list[dict]:
         for element in book_elements
         if element.to_dict()["type"] not in ["Footer", "PageBreak"]
     ]
+    
 
     # Partition recursively into subsections
     new_chapters = []
@@ -323,25 +324,29 @@ def parse(pdf_path: str) -> list[dict]:
         add_chunks(new_chapter)
         new_chapters.append(new_chapter)
 
+    
     book = Book(metadata=metadata, sections=new_chapters)
     
+    if partition_only:
+        view_chunks(book.flatten_elements())
+        return
     book.toc()
 
     # this is to benchmark the lesson generation (in async gather)
-    get_lessons(book)
+    # get_lessons(book)
     
-    # chunks = book.flatten_chunks(dict=True)
-    
-    # # cool view of the chunks
-    # console = Console()
-    # console.print()
-    # for i, chunk in enumerate(chunks):
-    #     console.print(Panel(
-    #         f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
-    #         f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
-    #         f"{chunk['text']}",
-    #         expand=True
-    #     ))
+    chunks = book.flatten_chunks(dict=True)
+    if view_chunks:
+        # cool view of the chunks
+        console = Console()
+        console.print()
+        for i, chunk in enumerate(chunks):
+            console.print(Panel(
+                f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
+                f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
+                f"{chunk['text']}",
+                expand=True
+            ))
         
     # return chunks
 
