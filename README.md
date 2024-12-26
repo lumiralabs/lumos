@@ -38,6 +38,10 @@ lumos.get_embedding("hello world")
 ```
 
 ### 3. Book Parser
+```bash
+python -m lumos.book_parser parse "path/to/book.pdf"
+```
+```
 ```python
 from lumos import book_parser
 

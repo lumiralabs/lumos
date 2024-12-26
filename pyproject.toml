@@ -25,6 +25,7 @@ book-parser = "lumos.book_parser:main"
 [tool.uv]
 dev-dependencies = [
     "ipykernel>=6.29.5",
+    "memory-profiler>=0.61.0",
     "pre-commit>=4.0.1",
     "pytest>=8.3.3",
 ]

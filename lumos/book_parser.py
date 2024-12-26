@@ -286,7 +286,7 @@ def list_chapters(pdf_path: str) -> None:
     else:
         console.print("[bold red]No chapters found.[/bold red]")
 
-# @profile
+@profile
 def parse(pdf_path: str, partition_only: bool = False, view_chunks: bool = False) -> list[dict]:
     """
     Returns a list of all the chunks in the book.
