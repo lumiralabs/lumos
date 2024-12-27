@@ -356,11 +356,11 @@ def get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
             content = "\n\n".join(element.text for element in section.elements)
 
         section_dict = {
-            "title": section.title,
             "level": number if number else "",
+            "title": section.title,
+            "content": content,
             "start_page": section.start_page,
             "end_page": section.end_page,
-            "content": content,
         }
 
         if only_leaf:
@@ -430,8 +430,6 @@ def from_pdf_path(pdf_path: str) -> Book:
         include_metadata=True,
     )
 
-    print(f"Finished partitioning book elements: {len(book_elements)=}")
-
     # Clean elements
     book_elements = [
         element
@@ -463,6 +461,18 @@ def parse(
     book = from_pdf_path(pdf_path)
     chunks = book.flatten_chunks(dict=True)
     sections = book.flatten_sections(only_leaf=True)
+
+    console = Console()
+    table = Table(title="Book Statistics", padding=1)
+    table.add_column("Type", style="cyan")
+    table.add_column("Count", style="yellow")
+
+    table.add_row("Elements", str(len(book.flatten_elements())))
+    table.add_row("Chunks", str(len(chunks)))
+    table.add_row("Sections", str(len(sections)))
+
+    console.print(table)
+    console.print()
 
     if type == "partitions":
         rich_view_chunks(book.flatten_elements())

@@ -1,6 +1,11 @@
 # lumos
 Simple utils for building AI apps. Available as python API and a server.
 
+## Local Dev
+```
+uv sync --extra dev && source .venv/bin/activate && pip install "unstructured[all-docs,md]" && uv pip install -e .
+```
+
 ## Install
 ```
 uv pip install git+https://github.com/lumiralabs/lumos

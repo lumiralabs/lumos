@@ -2,7 +2,7 @@ from litellm import completion, acompletion, embedding, transcription
 import json
 from typing import Any, TypeVar
 from pydantic import BaseModel
-from lumos.utils import cache_middleware
+from lumos.utils import cache_middleware, async_cache_middleware
 import base64
 import structlog
 import magic
@@ -99,7 +99,7 @@ def call_ai(
     return ret
 
 
-@cache_middleware
+@async_cache_middleware
 async def call_ai_async(
     messages: list[dict[str, str]],
     response_format: type[T] | None = None,
