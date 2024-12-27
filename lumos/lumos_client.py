@@ -2,24 +2,22 @@ from typing import TypeVar
 from pydantic import BaseModel
 import httpx
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
+
 
 class LumosClient:
     def __init__(self, base_url: str, api_key: str):
         """Initialize Lumos client with base URL and API key."""
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.api_key = api_key
-        self.headers = {
-            "X-API-Key": api_key,
-            "Content-Type": "application/json"
-        }
+        self.headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
 
     async def call_ai_async(
         self,
         messages: list[dict[str, str]],
         response_format: type[T] | None = None,
         examples: list[tuple[str, T]] | None = None,
-        model: str = "gpt-4o-mini"
+        model: str = "gpt-4o-mini",
     ) -> T | str:
         """
         Make an AI completion call to the Lumos server.
@@ -38,7 +36,7 @@ class LumosClient:
             "messages": messages,
             "model": model,
             "response_schema": None,
-            "examples": None
+            "examples": None,
         }
 
         # Add schema if response_format is provided
@@ -48,15 +46,12 @@ class LumosClient:
         # Add examples if provided
         if examples:
             payload["examples"] = [
-                (query, response.model_dump())
-                for query, response in examples
+                (query, response.model_dump()) for query, response in examples
             ]
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/gen",
-                headers=self.headers,
-                json=payload
+                f"{self.base_url}/gen", headers=self.headers, json=payload
             )
             response.raise_for_status()
             data = response.json()
@@ -66,21 +61,14 @@ class LumosClient:
             return data
 
     async def get_embedding(
-        self,
-        text: str | list[str],
-        model: str = "text-embedding-3-small"
+        self, text: str | list[str], model: str = "text-embedding-3-small"
     ) -> list[float] | list[list[float]]:
         """Get embeddings for text using the Lumos server."""
-        payload = {
-            "inputs": text,
-            "model": model
-        }
+        payload = {"inputs": text, "model": model}
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/embed",
-                headers=self.headers,
-                json=payload
+                f"{self.base_url}/embed", headers=self.headers, json=payload
             )
             response.raise_for_status()
             return response.json()
@@ -89,8 +77,7 @@ class LumosClient:
         """Check if the Lumos server is healthy."""
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{self.base_url}/healthz",
-                headers=self.headers
+                f"{self.base_url}/healthz", headers=self.headers
             )
             response.raise_for_status()
             return response.json()

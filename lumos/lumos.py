@@ -9,24 +9,33 @@ import magic
 
 logger = structlog.get_logger()
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
 
 
-def _construct_chat_examples(examples: list[tuple[str, T]], schema: type[T]) -> list[dict[str, str]]:
-    '''
+def _construct_chat_examples(
+    examples: list[tuple[str, T]], schema: type[T]
+) -> list[dict[str, str]]:
+    """
     Construct a list of chat messages from a list of examples.
-    Examples are pairs of query: response. Response should be the pydantic model 
-    '''
+    Examples are pairs of query: response. Response should be the pydantic model
+    """
     chat_messages: list[dict[str, str]] = []
     for query, response in examples:
         chat_messages.append({"role": "user", "content": query})
-        chat_messages.append({"role": "assistant", "content": response.model_dump_json()})
+        chat_messages.append(
+            {"role": "assistant", "content": response.model_dump_json()}
+        )
     return chat_messages
 
 
 @cache_middleware
-def call_ai(messages: list[dict[str, str]], response_format: type[T] | None = None, examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
-    '''
+def call_ai(
+    messages: list[dict[str, str]],
+    response_format: type[T] | None = None,
+    examples: list[tuple[str, T]] | None = None,
+    model="gpt-4o-mini",
+):
+    """
     Make an AI completion call using litellm, with support for few-shot examples.
 
     Args:
@@ -60,36 +69,44 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T] | None = No
         ]
         response = call_ai(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
-    '''
+    """
     # Prepare messages with examples if provided
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
-        assert messages[0]["role"] == "system", "First message must be system message when using examples"
-        assert messages[1]["role"] == "user", "Second message must be user message when using examples"
+        assert (
+            messages[0]["role"] == "system"
+        ), "First message must be system message when using examples"
+        assert (
+            messages[1]["role"] == "user"
+        ), "Second message must be user message when using examples"
         _messages = [messages[0]] + example_messages + [messages[1]]
     else:
         _messages = messages
 
     # Make the AI completion call
     response = completion(
-        model=model,
-        messages=_messages,
-        response_format=response_format
+        model=model, messages=_messages, response_format=response_format
     )
-    cost = response._hidden_params['response_cost']
+    cost = response._hidden_params["response_cost"]
     logger.info("ai_cost", cost=cost)
-    ret = response.choices[0]['message']['content']
+    ret = response.choices[0]["message"]["content"]
     if response_format:
         ret_dict = json.loads(ret)
         ret_obj = response_format.model_validate(ret_dict)
         return ret_obj
-    
+
     return ret
 
+
 @cache_middleware
-async def call_ai_async(messages: list[dict[str, str]], response_format: type[T] | None = None, examples: list[tuple[str, T]] | None = None, model="gpt-4o-mini"):
-    '''
+async def call_ai_async(
+    messages: list[dict[str, str]],
+    response_format: type[T] | None = None,
+    examples: list[tuple[str, T]] | None = None,
+    model="gpt-4o-mini",
+):
+    """
     Make an AI completion call using litellm, with support for few-shot examples.
 
     Args:
@@ -123,33 +140,34 @@ async def call_ai_async(messages: list[dict[str, str]], response_format: type[T]
         ]
         response = await call_ai_async(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
-    '''
+    """
     # Prepare messages with examples if provided
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
-        assert messages[0]["role"] == "system", "First message must be system message when using examples"
-        assert messages[1]["role"] == "user", "Second message must be user message when using examples"
+        assert (
+            messages[0]["role"] == "system"
+        ), "First message must be system message when using examples"
+        assert (
+            messages[1]["role"] == "user"
+        ), "Second message must be user message when using examples"
         _messages = [messages[0]] + example_messages + [messages[1]]
     else:
         _messages = messages
 
     # Make the AI completion call
     response = await acompletion(
-        model=model,
-        messages=_messages,
-        response_format=response_format
-    )   
-    cost = response._hidden_params['response_cost']
+        model=model, messages=_messages, response_format=response_format
+    )
+    cost = response._hidden_params["response_cost"]
     logger.info("ai_cost", cost=cost)
-    ret = response.choices[0]['message']['content']
+    ret = response.choices[0]["message"]["content"]
     if response_format:
         ret_dict = json.loads(ret)
         ret_obj = response_format.model_validate(ret_dict)
         return ret_obj
-    
-    return ret
 
+    return ret
 
 
 def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
@@ -157,32 +175,34 @@ def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
         _text = [text]
     else:
         _text = text
-    
-    embeddings = embedding(model, _text).json()['data']
+
+    embeddings = embedding(model, _text).json()["data"]
     if isinstance(text, str):
-        return embeddings[0]['embedding']
+        return embeddings[0]["embedding"]
     else:
-        return [e['embedding'] for e in embeddings]
+        return [e["embedding"] for e in embeddings]
+
 
 def transcribe(file, model: str = "whisper-1"):
     return transcription(file, model)
+
 
 async def describe_image(image: bytes, model: str = "gpt-4o-mini") -> str | None:
     # Validate image
     if not isinstance(image, bytes):
         logger.warning("Image must be bytes")
         return None
-        
+
     # Validate size
     if len(image) > 20 * 1024 * 1024:  # 20MB limit
-        logger.warning("Image too large") 
+        logger.warning("Image too large")
         return None
 
     # Detect mimetype
     mime = magic.Magic(mime=True)
     detected_mime = mime.from_buffer(image)
-    
-    if detected_mime not in ['image/png', 'image/jpeg', 'image/webp']:
+
+    if detected_mime not in ["image/png", "image/jpeg", "image/webp"]:
         logger.warning(f"Unsupported image mimetype: {detected_mime}")
         return None
 
@@ -204,12 +224,13 @@ async def describe_image(image: bytes, model: str = "gpt-4o-mini") -> str | None
                 ],
             }
         ],
-        model=model
+        model=model,
     )
 
+
 def get_knn(query: str, vec_db: Any, k: int = 10):
-    '''
+    """
     Get k-nearest neighbors chunks for a query and a given vector store
-    '''
+    """
     # TODO (jay): implement
     pass
