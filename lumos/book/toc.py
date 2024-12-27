@@ -12,14 +12,20 @@ def extract_chapters_by_pattern(sections: list[Section]) -> list[Section]:
     return [s for s in sections if chapter_pattern.match(s.title)]
 
 
-def _toc_to_str(sections: list[Section]) -> str:
-    """Convert sections to a string representation for AI processing."""
-    return "".join(
-        [
-            f"({idx}) {section.title} (Pages: {section.start_page}-{section.end_page})\n"
-            for idx, section in enumerate(sections)
-        ]
-    )
+def _toc_to_str(sections: list[Section], parent_idx: str = "", level: int = 0) -> str:
+    """Convert sections to a string representation for AI processing recursively."""
+    result = ""
+    for i, section in enumerate(sections):
+        if level == 0:
+            # Top level sections
+            result += f"({i}) {section.title} (Pages: {section.start_page}-{section.end_page})\n"
+        else:
+            # Non-top level sections with indent and dash
+            indent = "  " * (level + 1)  # Add one more indent level
+            result += f"{indent}- {section.title} (Pages: {section.start_page}-{section.end_page})\n"
+        if section.subsections:
+            result += _toc_to_str(section.subsections, f"{i}.", level + 1)
+    return result
 
 
 def extract_chapters_ai(sections: list[Section]) -> list[Section]:
@@ -33,11 +39,11 @@ def extract_chapters_ai(sections: list[Section]) -> list[Section]:
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. '01.', '02.' etc). Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. We want the most important chapters relevant for study. Return only a list of integers.",
+                "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. (1), (2), etc). Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. We want the most important chapters relevant for study. Return only a list of integers. Return only the top level chapters on the first level of the TOC. That is enough for selecting the chapters. Sometimes the top level TOC has Part 1, Part 2, inside which are the actual chapters. In that case return the indices of the parts. This will do the job for filtering out the chapters.",
             },
             {"role": "user", "content": toc_str},
         ],
-        model="gpt-4o-mini",
+        model="gpt-4o",
         response_format=BookChapters,
     )
 
