@@ -52,7 +52,7 @@ def rich_view_sections(sections: list[dict]) -> None:
 def rich_view_toc_sections(
     sections: list[Section],
     level: int | None = None,
-    type: Literal["chapter", "toc", "all"] = "all",
+    type: Literal["chapters", "all"] = "all",
 ) -> None:
     """Display table of contents in a rich tree format.
 
@@ -63,7 +63,7 @@ def rich_view_toc_sections(
     """
     console = Console()
 
-    if type in ["chapter", "all"]:
+    if type == "chapters":
         from .toc import extract_chapters
 
         chapters = extract_chapters(sections)
@@ -76,10 +76,13 @@ def rich_view_toc_sections(
         else:
             console.print("[bold red]No chapters found.[/bold red]")
 
-    if type in ["toc", "all"]:
-        tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
-        _build_section_tree(sections, tree, level=level)
-        console.print(tree)
+        return
+
+    tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
+    _build_section_tree(sections, tree, level=level)
+
+    console.print(tree)
+    return tree
 
 
 def _build_section_tree(
@@ -99,16 +102,10 @@ def _build_section_tree(
     level_colors = ["green", "yellow", "white", "cyan", "red"]
     color = level_colors[(current_level - 1) % len(level_colors)]
 
-    for i, section in enumerate(sections, 1):
+    for section in sections:
         if level is None or current_level <= level:
-            if parent_tree.label.startswith("("):
-                parent_number = parent_tree.label.split(" ")[0].strip("()")
-                section_number = f"({parent_number}.{i})"
-            else:
-                section_number = f"({i})"
-
             node = parent_tree.add(
-                f"[{color}]{section_number} {section.title}[/{color}] [dim italic](Pages: {section.start_page}-{section.end_page})"
+                f"[{color}]({section.level}) {section.title}[/{color}] [dim italic](Pages: {section.start_page}-{section.end_page})"
             )
             if section.subsections:
                 _build_section_tree(section.subsections, node, level, current_level + 1)

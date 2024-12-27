@@ -1,8 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any, Literal
 
 
 class Section(BaseModel):
+    level: str = Field(
+        description="The level of the section in the TOC like '1.1' or '1.2.1'"
+    )
     title: str
     start_page: int
     end_page: int

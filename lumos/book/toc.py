@@ -1,10 +1,8 @@
 import re
 import fitz
 from pydantic import BaseModel, Field
-from rich.tree import Tree
-from .models import Section
+from .models import Section, TOC
 from lumos import lumos
-from .utils import extract_pdf_metadata
 
 
 def extract_chapters_by_pattern(sections: list[Section]) -> list[Section]:
@@ -53,85 +51,56 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
     return chapters
 
 
-def _build_section_tree(
-    sections: list[Section],
-    parent_tree: Tree,
-    level: int | None = None,
-    current_level: int = 1,
-) -> None:
-    """Build a rich tree visualization of sections."""
-    level_colors = ["green", "yellow", "white", "cyan", "red"]
-    color = level_colors[(current_level - 1) % len(level_colors)]
+def _get_section_hierarchy(toc: list[list], total_pages: int) -> list[Section]:
+    """Build a hierarchical structure of sections from the TOC."""
 
-    for i, section in enumerate(sections, 1):
-        if level is None or current_level <= level:
-            if parent_tree.label.startswith("("):
-                parent_number = parent_tree.label.split(" ")[0].strip("()")
-                section_number = f"({parent_number}.{i})"
-            else:
-                section_number = f"({i})"
+    def recursive_parse(level, toc, index, parent_end_page, parent_level=""):
+        sections = []
+        section_num = 1
+        while index < len(toc):
+            curr_level, title, page = toc[index]
+            if curr_level < level:
+                break
 
-            node = parent_tree.add(
-                f"[{color}]{section_number} {section.title}[/{color}] [dim italic](Pages: {section.start_page}-{section.end_page})"
-            )
-            if section.subsections:
-                _build_section_tree(section.subsections, node, level, current_level + 1)
-
-
-class TOCExtractor:
-    """Class to handle PDF table of contents extraction and visualization."""
-
-    def __init__(self, pdf_path: str):
-        self.pdf_path = pdf_path
-        self.metadata = extract_pdf_metadata(pdf_path)
-        with fitz.open(pdf_path) as doc:
-            self.total_pages = len(doc)
-            self.toc = doc.get_toc()
-
-    def get_section_hierarchy(self) -> list[Section]:
-        """Get the complete section hierarchy from TOC."""
-        if not self.toc:
-            return []
-        return self._build_section_hierarchy(self.toc, self.total_pages)
-
-    def _build_section_hierarchy(
-        self, toc: list[list], total_pages: int
-    ) -> list[Section]:
-        """Build a hierarchical structure of sections from the TOC."""
-
-        def recursive_parse(level, toc, index, parent_end_page):
-            sections = []
-            while index < len(toc):
-                curr_level, title, page = toc[index]
-                if curr_level < level:
+            end_page = parent_end_page
+            for next_index in range(index + 1, len(toc)):
+                next_level, _, next_page = toc[next_index]
+                if next_level <= curr_level:
+                    end_page = next_page - 1
                     break
 
-                end_page = parent_end_page
-                for next_index in range(index + 1, len(toc)):
-                    next_level, _, next_page = toc[next_index]
-                    if next_level <= curr_level:
-                        end_page = next_page - 1
-                        break
+            current_level = (
+                f"{parent_level}{section_num}" if parent_level else str(section_num)
+            )
+            subsection, next_index = recursive_parse(
+                curr_level + 1, toc, index + 1, end_page, f"{current_level}."
+            )
 
-                subsection, next_index = recursive_parse(
-                    curr_level + 1, toc, index + 1, end_page
+            sections.append(
+                Section(
+                    level=current_level,
+                    title=title,
+                    start_page=page,
+                    end_page=end_page,
+                    subsections=subsection or None,
                 )
+            )
+            section_num += 1
+            index = next_index
+        return sections, index
 
-                sections.append(
-                    Section(
-                        title=title,
-                        start_page=page,
-                        end_page=end_page,
-                        subsections=subsection or None,
-                    )
-                )
-                index = next_index
-            return sections, index
+    top_level_sections, _ = recursive_parse(1, toc, 0, total_pages)
+    return top_level_sections
 
-        top_level_sections, _ = recursive_parse(1, toc, 0, total_pages)
-        return top_level_sections
 
-    def get_chapters(self) -> list[Section]:
-        """Extract main chapters from the TOC."""
-        sections = self.get_section_hierarchy()
-        return extract_chapters(sections)
+def extract_toc(pdf_path: str) -> TOC:
+    with fitz.open(pdf_path) as doc:
+        total_pages = len(doc)
+        toc = doc.get_toc()
+
+    if not toc:
+        raise ValueError("No TOC found in the PDF.")
+
+    sections = _get_section_hierarchy(toc, total_pages)
+
+    return TOC.model_validate({"sections": sections})

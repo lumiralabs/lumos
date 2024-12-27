@@ -1,28 +1,6 @@
-from lumos.lumos import construct_chat_examples, call_ai, call_ai_async
+from lumos import lumos
+
 from pydantic import BaseModel
-
-
-def test_construct_chat_examples():
-    class Response(BaseModel):
-        steps: list[str]
-        final_answer: str
-
-    chat_messages = construct_chat_examples(
-        [
-            (
-                "What is 100 * 100?",
-                Response(steps=["100 * 100 = 10000"], final_answer="10000"),
-            )
-        ],
-        Response,
-    )
-    assert chat_messages == [
-        {"role": "user", "content": "What is 100 * 100?"},
-        {
-            "role": "assistant",
-            "content": '{"steps": ["100 * 100 = 10000"], "final_answer": "10000"}',
-        },
-    ]
 
 
 def test_call_ai():
@@ -30,13 +8,13 @@ def test_call_ai():
         steps: list[str]
         final_answer: str
 
-    resp = call_ai(
-        "gpt-4o-mini",
-        [
+    resp = lumos.call_ai(
+        messages=[
             {"role": "system", "content": "You are a mathematician."},
             {"role": "user", "content": "What is 100 * 100?"},
         ],
-        Response,
+        response_format=Response,
+        model="gpt-4o-mini",
     )
 
     assert resp.final_answer == "10000"
@@ -47,11 +25,12 @@ async def test_call_ai_async():
         steps: list[str]
         final_answer: str
 
-    resp = await call_ai_async(
-        [
+    resp = await lumos.call_ai_async(
+        messages=[
             {"role": "system", "content": "You are a mathematician."},
             {"role": "user", "content": "What is 100 * 100?"},
         ],
-        Response,
+        response_format=Response,
+        model="gpt-4o-mini",
     )
     assert resp.final_answer == "10000"

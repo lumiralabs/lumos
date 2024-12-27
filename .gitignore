@@ -9,3 +9,5 @@ uv.lock
 *.DS_Store
 lumos/dev/*
 _experimental/
+*.json
+*.pdf
