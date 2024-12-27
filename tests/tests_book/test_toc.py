@@ -7,7 +7,7 @@ from lumos.book.visualizer import _build_section_tree
 
 @pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
 def test_extract_toc(book_name):
-    toc_file = f"tests/tests_book/{book_name}_toc.txt"
+    toc_file = f"tests/data/{book_name}_toc.txt"
     with open(toc_file, "r") as f:
         expected_toc = f.read()
 
@@ -24,7 +24,7 @@ def test_extract_toc(book_name):
 
 @pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
 def test_sanitize_toc(book_name):
-    expected_file = f"tests/tests_book/{book_name}_toc_sanitized.txt"
+    expected_file = f"tests/data/{book_name}_toc_sanitized.txt"
     with open(expected_file, "r") as f:
         expected_toc = f.read()
 
@@ -37,7 +37,7 @@ def test_sanitize_toc(book_name):
     console.print(tree)
     rich_tree_str = console.export_text()
 
-    output_file = f"tests/tests_book/{book_name}_toc_sanitized_out.txt"
+    output_file = f"tests/data/{book_name}_toc_sanitized_out.txt"
     with open(output_file, "w") as f:
         f.write(rich_tree_str)
 
