@@ -7,6 +7,10 @@ class Section(BaseModel):
         description="The level of the section in the TOC like '1.1' or '1.2.1'"
     )
     title: str
+    type: Literal["chapter", "section"] | None = Field(
+        None,
+        description="The type of the section like introduction, contents, chapter, index, appendix, etc.",
+    )
     start_page: int
     end_page: int
     subsections: list["Section"] | None = None

@@ -4,16 +4,18 @@ from typing import Literal
 import fire
 from unstructured.partition.auto import partition
 from .models import Book
-from .toc import TOCExtractor
+from .toc import extract_toc, sanitize_toc
+from .visualizer import rich_view_toc_sections
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
 from .visualizer import rich_view_chunks, rich_view_sections
+from .utils import extract_pdf_metadata
 
 
 def from_pdf_path(pdf_path: str) -> Book:
     """Create a Book object from a PDF file."""
-    toc_extractor = TOCExtractor(pdf_path)
-    metadata = toc_extractor.metadata
-    chapters = toc_extractor.get_chapters()
+    metadata = extract_pdf_metadata(pdf_path)
+    toc = extract_toc(pdf_path)
+    chapters = toc.sections
 
     # Extract and process book elements
     book_elements = partition(
@@ -46,11 +48,12 @@ def from_pdf_path(pdf_path: str) -> Book:
 def view_toc(
     pdf_path: str,
     level: int | None = None,
-    type: Literal["chapter", "toc", "all"] = "all",
+    type: Literal["chapter", "toc", "all"] | None = None,
 ) -> None:
     """View the table of contents of a PDF file."""
-    toc_extractor = TOCExtractor(pdf_path)
-    toc_extractor.print_toc(level=level, type=type)
+    toc = extract_toc(pdf_path)
+    toc = sanitize_toc(toc, type=type)
+    rich_view_toc_sections(toc.sections, level=level)
 
 
 def dev(
@@ -70,7 +73,6 @@ def dev(
         with open(book_pickle_path, "wb") as f:
             pickle.dump(book, f)
 
-    book.toc()
     chunks = book.flatten_chunks(dict=True)
     sections = book.flatten_sections(only_leaf=True)
 
@@ -97,12 +99,6 @@ def dev(
         rich_view_sections(sections)
     elif type == "chunks":
         rich_view_chunks(chunks)
-
-
-def main(pdf_path: str = "dev/data/asyncio/asyncio.pdf"):
-    """Main entry point for the parser."""
-    toc_extractor = TOCExtractor(pdf_path)
-    toc_extractor.print_toc()
 
 
 if __name__ == "__main__":

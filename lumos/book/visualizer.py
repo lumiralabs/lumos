@@ -2,7 +2,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.tree import Tree
-from typing import Any, Literal
+from typing import Any
 from .models import Book, Section
 
 
@@ -52,31 +52,8 @@ def rich_view_sections(sections: list[dict]) -> None:
 def rich_view_toc_sections(
     sections: list[Section],
     level: int | None = None,
-    type: Literal["chapters", "all"] = "all",
 ) -> None:
-    """Display table of contents in a rich tree format.
-
-    Args:
-        sections: List of sections to display
-        level: Maximum depth level to display (None for all levels)
-        type: Type of TOC to display ("chapter" for chapters only, "toc" for full TOC, "all" for both)
-    """
     console = Console()
-
-    if type == "chapters":
-        from .toc import extract_chapters
-
-        chapters = extract_chapters(sections)
-        if chapters:
-            console.print("[bold green]Chapters Found:[/bold green]")
-            for chapter in chapters:
-                console.print(
-                    f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
-                )
-        else:
-            console.print("[bold red]No chapters found.[/bold red]")
-
-        return
 
     tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
     _build_section_tree(sections, tree, level=level)

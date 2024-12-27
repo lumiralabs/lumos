@@ -3,6 +3,7 @@ import fitz
 from pydantic import BaseModel, Field
 from .models import Section, TOC
 from lumos import lumos
+from typing import Literal
 
 
 def extract_chapters_by_pattern(sections: list[Section]) -> list[Section]:
@@ -93,6 +94,39 @@ def _get_section_hierarchy(toc: list[list], total_pages: int) -> list[Section]:
     return top_level_sections
 
 
+def reset_section_levels(
+    sections: list[Section], parent_level: str = ""
+) -> list[Section]:
+    """Recursively reset section levels.
+
+    Args:
+        sections: List of sections to reset levels for
+        parent_level: Parent level prefix for nested sections
+
+    Returns:
+        List of sections with reset level numbering
+    """
+    sanitized = []
+    for i, section in enumerate(sections, 1):
+        current_level = f"{parent_level}{i}" if parent_level else str(i)
+        sanitized_subsections = None
+        if section.subsections:
+            sanitized_subsections = reset_section_levels(
+                section.subsections, f"{current_level}."
+            )
+
+        sanitized.append(
+            Section(
+                level=current_level,
+                title=section.title,
+                start_page=section.start_page,
+                end_page=section.end_page,
+                subsections=sanitized_subsections,
+            )
+        )
+    return sanitized
+
+
 # -----------------------------------------------------------------------------
 # PUBLIC FUNCTIONS
 # -----------------------------------------------------------------------------
@@ -111,44 +145,15 @@ def extract_toc(pdf_path: str) -> TOC:
     return TOC.model_validate({"sections": sections})
 
 
-def sanitize_toc(toc: TOC) -> TOC:
+def sanitize_toc(toc: TOC, type: Literal["chapter", "toc", "all"] | None = None) -> TOC:
     """Sanitize the TOC by removing unnecessary sections and subsections."""
     # Extract only the main chapters
-    chapters = extract_chapters(toc.sections)
+    if type is None:
+        return toc
 
-    # Reset level identifiers and create new sections
-    sanitized_sections = []
-    for i, chapter in enumerate(chapters, 1):
-        # Create new subsections with reset level identifiers if they exist
-        sanitized_subsections = None
-        if chapter.subsections:
-            sanitized_subsections = []
-            # Get all immediate subsections (level 1 deeper than chapter)
-            immediate_subs = [
-                sub
-                for sub in chapter.subsections
-                if len(sub.level.split(".")) == len(chapter.level.split(".")) + 1
-            ]
-            for j, sub in enumerate(immediate_subs, 1):
-                sanitized_subsections.append(
-                    Section(
-                        level=f"{i}.{j}",
-                        title=sub.title,
-                        start_page=sub.start_page,
-                        end_page=sub.end_page,
-                        subsections=None,  # We don't keep deeper levels
-                    )
-                )
+    sanitized_sections = extract_chapters(toc.sections)
+    if not sanitized_sections:
+        raise ValueError("No chapters found in the TOC.")
 
-        # Create the main chapter section with reset level
-        sanitized_sections.append(
-            Section(
-                level=str(i),
-                title=chapter.title,
-                start_page=chapter.start_page,
-                end_page=chapter.end_page,
-                subsections=sanitized_subsections,
-            )
-        )
-
+    sanitized_sections = reset_section_levels(sanitized_sections)
     return TOC.model_validate({"sections": sanitized_sections})

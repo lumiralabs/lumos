@@ -23,11 +23,14 @@ def test_sanitize_toc():
         expected_toc = f.read()
 
     _toc = extract_toc("tests/data/asyncio.pdf")
-    sanitized_toc = sanitize_toc(_toc)
+    sanitized_toc = sanitize_toc(_toc, type="chapter")
     tree = Tree("Sanitized Table of Contents")
     _build_section_tree(sanitized_toc.sections, tree)
     console = Console(record=True, width=500)
     console.print(tree)
     rich_tree_str = console.export_text()
+
+    with open("tests/tests_book/asyncio_toc_sanitized_out.txt", "w") as f:
+        f.write(rich_tree_str)
 
     assert rich_tree_str == expected_toc
