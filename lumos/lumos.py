@@ -77,6 +77,8 @@ def call_ai(messages: list[dict[str, str]], response_format: type[T] | None = No
         messages=_messages,
         response_format=response_format
     )
+    cost = response._hidden_params['response_cost']
+    logger.info("ai_cost", cost=cost)
     ret = response.choices[0]['message']['content']
     if response_format:
         ret_dict = json.loads(ret)

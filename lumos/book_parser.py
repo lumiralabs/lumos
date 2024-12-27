@@ -7,14 +7,13 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.tree import Tree
 import fire
-import json
+from lumos import lumos
+from pydantic import BaseModel, Field
 import fitz
 from typing import Any
 import copy
 from unstructured.partition.auto import partition
 from unstructured.chunking.title import chunk_by_title
-from lumos import lumos
-from pydantic import BaseModel, Field
 import asyncio
 from typing import Literal
 class Section(BaseModel):
@@ -24,6 +23,24 @@ class Section(BaseModel):
     subsections: list["Section"] | None = None
     chunks: list[Any] | None = None
     elements: list[Any] | None = None
+    
+    def flatten_elements(self):
+        elements = []
+        if self.elements:
+            elements.extend(self.elements)
+        if self.subsections:
+            for subsection in self.subsections:
+                elements.extend(subsection.flatten_elements())
+        return elements
+    
+    def flatten_chunks(self):
+        chunks = []
+        if self.chunks:
+            chunks.extend(self.chunks)
+        if self.subsections:
+            for subsection in self.subsections:
+                chunks.extend(subsection.flatten_chunks())
+        return chunks
 
 
 class PDFMetadata(BaseModel):
@@ -45,13 +62,13 @@ class Book(BaseModel):
     def flatten_elements(self):
         elements = []
         for section in self.sections:
-            elements.extend(flatten_section_elements(section))
+            elements.extend(section.flatten_elements())
         return elements
 
     def flatten_chunks(self, dict=True):
         chunks = []
         for section in self.sections:
-            chunks.extend(flatten_section_chunks(section))
+            chunks.extend(section.flatten_chunks())
         
         if dict:
             return [chunk.to_dict() for chunk in chunks]
@@ -82,26 +99,6 @@ def recur_to_dict(obj):
     if sections := obj.get("sections"):
         for section in sections:
             recur_to_dict(section)
-
-
-def flatten_section_chunks(section: Section) -> list[Any]:
-    chunks = []
-    if section.chunks:
-        chunks.extend(section.chunks)
-    if section.subsections:
-        for subsection in section.subsections:
-            chunks.extend(flatten_section_chunks(subsection))
-    return chunks
-
-
-def flatten_section_elements(section: Section) -> list[Any]:
-    elements = []
-    if section.elements:
-        elements.extend(section.elements)
-    if section.subsections:
-        for subsection in section.subsections:
-            elements.extend(flatten_section_elements(subsection))
-    return elements
 
 
 def extract_pdf_metadata(pdf_path: str) -> PDFMetadata:
@@ -182,7 +179,13 @@ def get_section_hierarchy(pdf_path: str) -> list[Section]:
         total_pages = len(doc)
     return build_section_hierarchy(metadata.toc, total_pages)
 
-
+def toc_to_str(sections: list[Section]) -> str:
+    return "".join([
+        f"({idx}) {section.title} (Pages: {section.start_page}-{section.end_page})\n"
+        for idx, section in enumerate(sections)
+    ])
+    
+    
 def extract_toc(sections: list[Section]) -> Section:
     toc_pattern = re.compile(r"^table of contents$", re.IGNORECASE)
     toc_sections = []
@@ -193,6 +196,44 @@ def extract_toc(sections: list[Section]) -> Section:
     assert len(toc_sections) == 1, "Expected exactly one TOC section"
     return toc_sections[0]
 
+
+
+def extract_toc_ai(sections: list[Section]) -> list[Section]:
+    toc_str = toc_to_str(sections)
+    class TOCSection(BaseModel):
+        toc_section: int | None = Field(..., description="The chapter number of the table of contents")
+        
+    ret = lumos.call_ai(
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. Given this table of contents, identify the line number (in parentheses) that contains the 'Table of Contents' section. Return just that integer. If no table of contents is found, return null."},
+            {"role": "user", "content": toc_str},
+        ],
+        model="gpt-4o-mini",
+        response_format=TOCSection,
+    )
+    
+    if ret.toc_section is None:
+        return []
+    
+    toc_section = sections[ret.toc_section]
+    return toc_section
+
+def extract_chapters_ai(sections: list[Section]) -> list[Section]:
+    toc_str = toc_to_str(sections)
+    class BookChapters(BaseModel):
+        chapters: list[int] = Field(..., description="List of chapter numbers")
+
+    ret = lumos.call_ai(
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. '01.', '02.' etc). Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. We want the most important chapters relevant for study. Return only a list of integers."},
+            {"role": "user", "content": toc_str},
+        ],
+        model="gpt-4o-mini",
+        response_format=BookChapters,
+    )
+    
+    selected_chapters = [sections[i] for i in ret.chapters]
+    return selected_chapters
 
 def extract_chapters(sections: list[Section]) -> list[Section]:
     chapter_pattern = re.compile(r"^chapter \d+(?!.*appendix).*$", re.IGNORECASE)
@@ -309,12 +350,12 @@ def get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
         
     return sections
 
-def view_toc(pdf_path: str, level: int | None = None, chapters: bool = False) -> None:
+def view_toc(pdf_path: str, level: int | None = None, type: Literal["chapter", "toc", "all"] = "all") -> None:
     sections = get_section_hierarchy(pdf_path)
     chapters_list = extract_chapters(sections)
-
     console = Console()
-    if chapters:
+
+    if type == "chapter":
         if chapters_list:
             console.print("[bold green]Chapters Found:[/bold green]")
             for chapter in chapters_list:
@@ -322,17 +363,23 @@ def view_toc(pdf_path: str, level: int | None = None, chapters: bool = False) ->
                     f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
                 )
         else:
-            console.print("[bold red]No chapters found.[/bold red]")
-    else:
+            console.print("[bold red]No chapters found. Attempting to extract chapters with AI...[/bold red]")
+            chapters_list = extract_chapters_ai(sections)
+            for chapter in chapters_list:
+                console.print(
+                    f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
+                )
+    elif type == "toc":
+        toc_section = extract_toc_ai(sections)
+        tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
+        print_section_tree([toc_section], tree, level=level)
+        console.print(tree)
+    else:  # type == "all"
         tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
         print_section_tree(sections, tree, level=level)
         console.print(tree)
 
-# @profile
-def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lessons"] | None = None) -> list[dict]:
-    """
-    Returns a list of all the chunks in the book.
-    """
+def from_pdf_path(pdf_path: str) -> Book:
     metadata = extract_pdf_metadata(pdf_path)
     sections = get_section_hierarchy(pdf_path)
     chapters = extract_chapters(sections)
@@ -364,6 +411,14 @@ def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lesso
         new_chapters.append(new_chapter)
 
     book = Book(metadata=metadata, sections=new_chapters)
+    return book
+# @profile
+def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lessons"] | None = None) -> list[dict]:
+    """
+    Returns a list of all the chunks in the book.
+    """
+    
+    book = from_pdf_path(pdf_path)
     chunks = book.flatten_chunks(dict=True)
     sections = book.flatten_sections(only_leaf=True)
     
