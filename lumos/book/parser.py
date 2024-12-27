@@ -45,7 +45,7 @@ def from_pdf_path(pdf_path: str) -> Book:
     return Book(metadata=metadata, sections=new_chapters)
 
 
-def get_section_and_chunks(pdf_path: str):
+def parse(pdf_path: str):
     book = from_pdf_path(pdf_path)
     return book.flatten_sections(only_leaf=True), book.flatten_chunks(dict=True)
 
