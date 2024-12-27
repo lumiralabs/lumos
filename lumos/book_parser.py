@@ -36,7 +36,7 @@ class Section(BaseModel):
     def flatten_chunks(self):
         chunks = []
         if self.chunks:
-            chunks.extend(self.chunks)
+            chunks.extend([chunk.to_dict() if not isinstance(chunk, dict) else chunk for chunk in self.chunks])
         if self.subsections:
             for subsection in self.subsections:
                 chunks.extend(subsection.flatten_chunks())
@@ -71,8 +71,8 @@ class Book(BaseModel):
             chunks.extend(section.flatten_chunks())
         
         if dict:
-            return [chunk.to_dict() for chunk in chunks]
-        return chunks
+            return chunks  # chunks are already converted to dict by Section.flatten_chunks()
+        return [chunk if isinstance(chunk, dict) else chunk.to_dict() for chunk in chunks]
 
     def toc(self, level: int | None = None, chapters: bool = False):
         return view_toc(self.metadata.path, level=level, chapters=chapters)
@@ -242,6 +242,10 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
     for section in sections:
         if chapter_pattern.match(section.title):
             chapters.append(section)
+            
+    if not chapters:
+        print("No chapters found. Attempting to extract chapters with AI...")
+        chapters = extract_chapters_ai(sections)
     return chapters
 
 
@@ -413,7 +417,7 @@ def from_pdf_path(pdf_path: str) -> Book:
     book = Book(metadata=metadata, sections=new_chapters)
     return book
 # @profile
-def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lessons"] | None = None) -> list[dict]:
+def parse(pdf_path: str, type: Literal["partitions", "sections", "chunks", "lessons"] | None = None) -> list[dict]:
     """
     Returns a list of all the chunks in the book.
     """
@@ -422,25 +426,17 @@ def parse(pdf_path: str, dev: Literal["partitions", "sections", "chunks", "lesso
     chunks = book.flatten_chunks(dict=True)
     sections = book.flatten_sections(only_leaf=True)
     
-    if dev == "partitions":
+    if type == "partitions":
         rich_view_chunks(book.flatten_elements())
         return
-    elif dev == "sections":
+    elif type == "sections":
         rich_view_sections(sections)
         return
-    elif dev == "lessons":
+    elif type == "lessons":
         view_ai_summaries(sections)
         return
-    elif dev == "chunks":
-        console = Console()
-        console.print()
-        for i, chunk in enumerate(chunks):
-            console.print(Panel(
-                f"[bold cyan]Chunk {i}[/bold cyan]\n\n"
-                f"[yellow]Page {chunk['metadata']['page_number']}[/yellow]\n\n"
-                f"{chunk['text']}",
-                expand=True
-            ))
+    elif type == "chunks":
+        rich_view_chunks(chunks)
         return
         
     return sections, chunks
@@ -652,20 +648,15 @@ def rich_view_sections(sections: list[dict]) -> None:
 
     console.print(table)
 
-def main():
+if __name__ == "__main__":
     fire.Fire(
         {
             "toc": view_toc,
             "parse": parse,
         }
     )
-
-
-if __name__ == "__main__":
-    main()
-
 # Usage:
-# python -m lumos.book_parser toc .dev/data/asyncio/asyncio.pdf 2 --chapters
-# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=lessons
-# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=chunks
-# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --dev=partitions
+# python -m lumos.book_parser toc .dev/data/asyncio/asyncio.pdf --levels=2 --type=chapter
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --type=partitions
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --type=lessons
+# python -m lumos.book_parser parse .dev/data/asyncio/asyncio.pdf --type=chunks
