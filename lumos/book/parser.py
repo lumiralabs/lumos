@@ -9,15 +9,20 @@ from .visualizer import rich_view_toc_sections
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
 from .visualizer import rich_view_chunks, rich_view_sections
 from .utils import extract_pdf_metadata
+import structlog
+
+logger = structlog.get_logger()
 
 
 def from_pdf_path(pdf_path: str) -> Book:
     """Create a Book object from a PDF file."""
     metadata = extract_pdf_metadata(pdf_path)
     toc = extract_toc(pdf_path)
+    toc = sanitize_toc(toc, type="chapter")
     chapters = toc.sections
 
     # Extract and process book elements
+    logger.info("[book-parser] Extracting book elements", pdf_path=pdf_path)
     book_elements = partition(
         filename=pdf_path,
         api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
@@ -26,6 +31,7 @@ def from_pdf_path(pdf_path: str) -> Book:
         strategy="fast",
         include_metadata=True,
     )
+    logger.info("[book-parser] Extracted book elements", len=len(book_elements))
 
     # Clean elements
     book_elements = [

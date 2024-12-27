@@ -32,22 +32,40 @@ def extract_chapters_ai(sections: list[Section]) -> list[Section]:
     """Use AI to identify main chapters when pattern matching fails."""
     toc_str = _toc_to_str(sections)
 
-    class BookChapters(BaseModel):
-        chapters: list[int] = Field(..., description="List of chapter numbers")
+    class BookTopLevel(BaseModel):
+        type: Literal["chapter", "part"]
+        indices: list[int] = Field(..., description="List of part or chapter numbers")
 
     ret = lumos.call_ai(
         messages=[
             {
                 "role": "system",
-                "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. (1), (2), etc). Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. We want the most important chapters relevant for study. Return only a list of integers. Return only the top level chapters on the first level of the TOC. That is enough for selecting the chapters. Sometimes the top level TOC has Part 1, Part 2, inside which are the actual chapters. In that case return the indices of the parts. This will do the job for filtering out the chapters.",
+                "content": "You are a helpful assistant that can identify chapter numbers from a table of contents. "
+                "Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. (1), (2), etc). "
+                "Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. "
+                "We want the most important parts and chapters relevant for study. "
+                "Return only a list of indices for the top level of the TOC. That is enough for selecting the chapters. "
+                "Sometimes the top level TOC has Part 1, Part 2, inside which are the actual chapters. "
+                "In that case return the indices of the parts. For parts, focus on the most relevant parts, ignore Bonus content. "
+                "This will do the job for filtering out the chapters.",
             },
             {"role": "user", "content": toc_str},
         ],
         model="gpt-4o",
-        response_format=BookChapters,
+        response_format=BookTopLevel,
     )
-
-    return [sections[i] for i in ret.chapters]
+    return [
+        Section(
+            level=s.level,
+            title=s.title,
+            start_page=s.start_page,
+            end_page=s.end_page,
+            subsections=s.subsections,
+            type=ret.type,
+        )
+        for i, s in enumerate(sections)
+        if i in ret.indices
+    ]
 
 
 def extract_chapters(sections: list[Section]) -> list[Section]:
@@ -114,7 +132,12 @@ def reset_section_levels(
     """
     sanitized = []
     for i, section in enumerate(sections, 1):
-        current_level = f"{parent_level}{i}" if parent_level else str(i)
+        if getattr(section, "type", None) == "part":
+            # Use A, B, C for parts
+            current_level = chr(64 + i)  # 65 is ASCII for 'A'
+        else:
+            current_level = f"{parent_level}{i}" if parent_level else str(i)
+
         sanitized_subsections = None
         if section.subsections:
             sanitized_subsections = reset_section_levels(
@@ -128,6 +151,7 @@ def reset_section_levels(
                 start_page=section.start_page,
                 end_page=section.end_page,
                 subsections=sanitized_subsections,
+                type=getattr(section, "type", None),
             )
         )
     return sanitized

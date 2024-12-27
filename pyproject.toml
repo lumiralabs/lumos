@@ -7,17 +7,17 @@ authors = [
 description = "A package for AI interactions"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115.5",
+    "fastapi>=0.115.6",
     "fire>=0.7.0",
-    "litellm>=1.53.1",
-    "pydantic>=2.10.2",
-    "pymupdf>=1.25.1",
-    "python-magic>=0.4.27",
+    "litellm>=1.55.12",
+    "pydantic>=2.10.4",
     "rich>=13.9.4",
     "structlog>=24.4.0",
-    "unstructured>=0.16.11",
     "unstructured-ingest>=0.3.11",
-    "uvicorn>=0.32.1",
+    "unstructured>=0.16.11",
+    "uvicorn>=0.34.0",
+    "pymupdf>=1.25.1",
+    "python-magic>=0.4.27",
 ]
 
 [tool.uv]
@@ -27,6 +27,7 @@ dev-dependencies = [
     "pip>=24.3.1",
     "pre-commit>=4.0.1",
     "pytest>=8.3.3",
+    "pytest-asyncio>=0.25.0",
 ]
 
 [tool.uv.workspace]

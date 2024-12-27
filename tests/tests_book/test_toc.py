@@ -1,36 +1,44 @@
+import pytest
 from lumos.book.toc import extract_toc, sanitize_toc
 from rich.tree import Tree
 from rich.console import Console
 from lumos.book.visualizer import _build_section_tree
 
 
-def test_extract_toc():
-    with open("tests/tests_book/asyncio_toc.txt", "r") as f:
-        asyncio_toc = f.read()
+@pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
+def test_extract_toc(book_name):
+    toc_file = f"tests/tests_book/{book_name}_toc.txt"
+    with open(toc_file, "r") as f:
+        expected_toc = f.read()
 
-    toc = extract_toc("tests/data/asyncio.pdf")
+    pdf_path = f"tests/data/{book_name}.pdf"
+    toc = extract_toc(pdf_path)
     tree = Tree("Table of Contents")
     _build_section_tree(toc.sections, tree)
     console = Console(record=True, width=500)
     console.print(tree)
     rich_tree_str = console.export_text()
 
-    assert rich_tree_str == asyncio_toc
+    assert rich_tree_str.strip() == expected_toc.strip()
 
 
-def test_sanitize_toc():
-    with open("tests/tests_book/asyncio_toc_sanitized.txt", "r") as f:
+@pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
+def test_sanitize_toc(book_name):
+    expected_file = f"tests/tests_book/{book_name}_toc_sanitized.txt"
+    with open(expected_file, "r") as f:
         expected_toc = f.read()
 
-    _toc = extract_toc("tests/data/asyncio.pdf")
-    sanitized_toc = sanitize_toc(_toc, type="chapter")
+    pdf_path = f"tests/data/{book_name}.pdf"
+    toc = extract_toc(pdf_path)
+    sanitized_toc = sanitize_toc(toc, type="chapter")
     tree = Tree("Sanitized Table of Contents")
     _build_section_tree(sanitized_toc.sections, tree)
     console = Console(record=True, width=500)
     console.print(tree)
     rich_tree_str = console.export_text()
 
-    with open("tests/tests_book/asyncio_toc_sanitized_out.txt", "w") as f:
+    output_file = f"tests/tests_book/{book_name}_toc_sanitized_out.txt"
+    with open(output_file, "w") as f:
         f.write(rich_tree_str)
 
-    assert rich_tree_str == expected_toc
+    assert rich_tree_str.strip() == expected_toc.strip()
