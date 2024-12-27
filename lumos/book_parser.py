@@ -15,6 +15,7 @@ from unstructured.partition.auto import partition
 from unstructured.chunking.title import chunk_by_title
 import asyncio
 from typing import Literal
+import pickle
 
 
 class Section(BaseModel):
@@ -82,8 +83,10 @@ class Book(BaseModel):
             chunk if isinstance(chunk, dict) else chunk.to_dict() for chunk in chunks
         ]
 
-    def toc(self, level: int | None = None, chapters: bool = False):
-        return view_toc(self.metadata.path, level=level, chapters=chapters)
+    def toc(
+        self, level: int | None = None, type: Literal["chapter", "toc", "all"] = "all"
+    ):
+        return view_toc(self.metadata.path, level=level, type=type)
 
     def to_dict(self):
         book_dict = self.model_dump()
@@ -239,6 +242,7 @@ def extract_toc_ai(sections: list[Section]) -> list[Section]:
 
 def extract_chapters_ai(sections: list[Section]) -> list[Section]:
     toc_str = toc_to_str(sections)
+    print(toc_str)
 
     class BookChapters(BaseModel):
         chapters: list[int] = Field(..., description="List of chapter numbers")
@@ -386,10 +390,10 @@ def view_toc(
     type: Literal["chapter", "toc", "all"] = "all",
 ) -> None:
     sections = get_section_hierarchy(pdf_path)
-    chapters_list = extract_chapters(sections)
     console = Console()
 
     if type == "chapter":
+        chapters_list = extract_chapters(sections)
         if chapters_list:
             console.print("[bold green]Chapters Found:[/bold green]")
             for chapter in chapters_list:
@@ -397,14 +401,7 @@ def view_toc(
                     f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
                 )
         else:
-            console.print(
-                "[bold red]No chapters found. Attempting to extract chapters with AI...[/bold red]"
-            )
-            chapters_list = extract_chapters_ai(sections)
-            for chapter in chapters_list:
-                console.print(
-                    f"- {chapter.title} (Pages: {chapter.start_page}-{chapter.end_page})"
-                )
+            console.print("[bold red]No chapters found.[/bold red]")
     elif type == "toc":
         toc_section = extract_toc_ai(sections)
         tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
@@ -449,8 +446,7 @@ def from_pdf_path(pdf_path: str) -> Book:
     return book
 
 
-# @profile
-def parse(
+def dev(
     pdf_path: str,
     type: Literal["partitions", "sections", "chunks", "lessons"] | None = None,
 ) -> list[dict]:
@@ -458,7 +454,19 @@ def parse(
     Returns a list of all the chunks in the book.
     """
 
-    book = from_pdf_path(pdf_path)
+    book_pickle_path = os.path.basename(pdf_path).replace(".pdf", ".pickle")
+    if os.path.exists(book_pickle_path):
+        print(f"Loading book from {book_pickle_path}...")
+        with open(book_pickle_path, "rb") as f:
+            book = pickle.load(f)
+    else:
+        print(f"Parsing book from {pdf_path}...")
+        book = from_pdf_path(pdf_path)
+        print(f"Dumping book to {book_pickle_path}...")
+        with open(book_pickle_path, "wb") as f:
+            pickle.dump(book, f)
+
+    book.toc()
     chunks = book.flatten_chunks(dict=True)
     sections = book.flatten_sections(only_leaf=True)
 
@@ -476,16 +484,25 @@ def parse(
 
     if type == "partitions":
         rich_view_chunks(book.flatten_elements())
-        return
     elif type == "sections":
         rich_view_sections(sections)
-        return
     elif type == "lessons":
         view_ai_summaries(sections)
-        return
     elif type == "chunks":
         rich_view_chunks(chunks)
-        return
+
+
+# @profile
+def parse(
+    pdf_path: str,
+) -> list[dict]:
+    """
+    Returns a list of all the chunks in the book.
+    """
+
+    book = from_pdf_path(pdf_path)
+    chunks = book.flatten_chunks(dict=True)
+    sections = book.flatten_sections(only_leaf=True)
 
     return sections, chunks
 
@@ -720,7 +737,7 @@ if __name__ == "__main__":
     fire.Fire(
         {
             "toc": view_toc,
-            "parse": parse,
+            "dev": dev,
         }
     )
 # Usage:
