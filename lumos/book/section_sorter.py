@@ -2,7 +2,7 @@ import os
 import pickle
 import asyncio
 import structlog
-from lumos import book_parser, lumos
+from lumos import lumos
 from pydantic import BaseModel, Field
 from typing import Literal
 from rich.table import Table
@@ -305,7 +305,7 @@ async def sort_main(pdf_path: str = "dev/data/asyncio/asyncio.pdf"):
             book = pickle.load(f)
     else:
         print(f"Parsing book from {pdf_path}...")
-        book = book_parser.from_pdf_path(pdf_path)
+        book = book.from_pdf_path(pdf_path)
         print(f"Dumping book to {pickle_path}...")
         with open(pickle_path, "wb") as f:
             pickle.dump(book, f)
