@@ -5,9 +5,8 @@ import fire
 from unstructured.partition.auto import partition
 from .models import Book
 from .toc import extract_toc, sanitize_toc
-from .visualizer import rich_view_toc_sections
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
-from .visualizer import rich_view_chunks, rich_view_sections
+from .visualizer import rich_view_chunks, rich_view_sections, rich_view_toc_sections
 from .utils import extract_pdf_metadata
 import structlog
 
@@ -18,7 +17,11 @@ def from_pdf_path(pdf_path: str) -> Book:
     """Create a Book object from a PDF file."""
     metadata = extract_pdf_metadata(pdf_path)
     toc = extract_toc(pdf_path)
+    print("TOC:")
+    rich_view_toc_sections(toc.sections)
     toc = sanitize_toc(toc, type="chapter")
+    print("Sanitized TOC:")
+    rich_view_toc_sections(toc.sections)
     chapters = toc.sections
 
     # Extract and process book elements
@@ -54,17 +57,6 @@ def from_pdf_path(pdf_path: str) -> Book:
 def parse(pdf_path: str):
     book = from_pdf_path(pdf_path)
     return book.flatten_sections(only_leaf=True), book.flatten_chunks(dict=True)
-
-
-def view_toc(
-    pdf_path: str,
-    level: int | None = None,
-    type: Literal["chapter", "toc", "all"] | None = None,
-) -> None:
-    """View the table of contents of a PDF file."""
-    toc = extract_toc(pdf_path)
-    toc = sanitize_toc(toc, type=type)
-    rich_view_toc_sections(toc.sections, level=level)
 
 
 def dev(
@@ -113,9 +105,4 @@ def dev(
 
 
 if __name__ == "__main__":
-    fire.Fire(
-        {
-            "toc": view_toc,
-            "dev": dev,
-        }
-    )
+    fire.Fire(dev)

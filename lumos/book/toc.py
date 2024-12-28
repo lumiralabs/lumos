@@ -5,7 +5,8 @@ from .models import Section, TOC
 from lumos import lumos
 from typing import Literal
 import structlog
-from .toc_ai import extract_toc_ai
+import fire
+from .visualizer import rich_view_toc_sections
 
 logger = structlog.get_logger(__name__)
 
@@ -36,9 +37,11 @@ def extract_chapters_ai(sections: list[Section]) -> list[Section]:
     """Use AI to identify main chapters when pattern matching fails."""
     toc_str = _toc_to_str(sections)
 
+    print(toc_str)
+
     class BookTopLevel(BaseModel):
         type: Literal["chapter", "part"]
-        indices: list[int] = Field(..., description="List of part or chapter numbers")
+        indices: list[int] = Field(..., description="List of part and chapter numbers")
 
     ret = lumos.call_ai(
         messages=[
@@ -48,13 +51,18 @@ def extract_chapters_ai(sections: list[Section]) -> list[Section]:
                 "Given this table of contents, identify the line numbers (in parentheses) that contain actual numbered chapters (e.g. (1), (2), etc). "
                 "Ignore sections like 'Table of Contents', 'Index', 'Acknowledgements', Appendices, etc. "
                 "We want the most important parts and chapters relevant for study. "
-                "Return only a list of indices for the top level of the TOC. That is enough for selecting the chapters. "
+                "Return only a list of indices for the top level of the TOC. Elements that are numbered as (1), (2), etc. "
+                # "That will be enough for selecting the chapters. "
                 "Sometimes the top level TOC has Part 1, Part 2, inside which are the actual chapters. "
-                "In that case return the indices of the parts. For parts, focus on the most relevant parts, ignore Bonus content. "
-                "This will do the job for filtering out the chapters.",
+                "Sometimes there are both parts and chapters in the top level TOC because of incorrect parsing. "
+                "Ideally chapters should be selected inside the parts. Use the page ranges to assess if the section that will be filtered will have enough content to be useful. "
+                "Ensure you select the parts and chapters. "
+                "Ignore bonus content, like 'Appendix', 'Glossary', 'Index', etc. "
+                "In general select all sections that are main content of the book.",
             },
             {"role": "user", "content": toc_str},
         ],
+        # model="claude-3-5-sonnet-20240620",
         model="gpt-4o",
         response_format=BookTopLevel,
     )
@@ -174,19 +182,26 @@ def extract_toc_from_metadata(pdf_path: str) -> list[list[int | str]]:
 
 
 def extract_toc(pdf_path: str) -> TOC:
+    logger.debug("extracting_toc", pdf_path=pdf_path)
+
     toc_list = extract_toc_from_metadata(pdf_path)
+
+    # if not toc_list:
+    #     logger.info("no_toc_found_in_metadata", pdf_path=pdf_path)
+    #     logger.info("attempting_ai_extraction", pdf_path=pdf_path)
+    #     toc_list = extract_toc_ai(pdf_path)
+
     if not toc_list:
-        logger.info("no_toc_found. Attempting AI extraction", pdf_path=pdf_path)
-        toc_list = extract_toc_ai(pdf_path)
+        raise ValueError(f"Could not extract table of contents from {pdf_path}")
 
     with fitz.open(pdf_path) as doc:
         total_pages = len(doc)
 
     sections = _get_section_hierarchy(toc_list, total_pages)
-    return TOC.model_validate({"sections": sections})
+    return TOC(sections=sections)
 
 
-def sanitize_toc(toc: TOC, type: Literal["chapter", "toc", "all"] | None = None) -> TOC:
+def sanitize_toc(toc: TOC, type: Literal["chapter"] | None = None) -> TOC:
     """Sanitize the TOC by removing unnecessary sections and subsections."""
     # Extract only the main chapters
     if type is None:
@@ -197,4 +212,34 @@ def sanitize_toc(toc: TOC, type: Literal["chapter", "toc", "all"] | None = None)
         raise ValueError("No chapters found in the TOC.")
 
     sanitized_sections = reset_section_levels(sanitized_sections)
-    return TOC.model_validate({"sections": sanitized_sections})
+    return TOC(sections=sanitized_sections)
+
+
+def edit_toc(toc_list: list[list], level: int | None = None) -> list[list]:
+    if level is None:
+        return toc_list
+
+    return [entry for entry in toc_list if entry[0] <= level]
+
+
+## CLI
+
+# class CLI:
+
+
+def cli(
+    pdf_path: str,
+    level: int | None = None,
+    type: Literal["chapter"] | None = None,
+):
+    with fitz.open(pdf_path) as doc:
+        total_pages = len(doc)
+    toc_list = extract_toc_from_metadata(pdf_path)
+    toc_list = edit_toc(toc_list, level=level)
+    sections = _get_section_hierarchy(toc_list, total_pages)
+    toc_sanitized = sanitize_toc(TOC(sections=sections), type=type)
+    rich_view_toc_sections(toc_sanitized.sections)
+
+
+if __name__ == "__main__":
+    fire.Fire(cli)

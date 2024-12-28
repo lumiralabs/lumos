@@ -6,8 +6,9 @@ from pdf2image import convert_from_path
 from pydantic import BaseModel, Field
 import structlog
 import fire
-
+from .visualizer import rich_view_toc_sections
 from lumos import lumos
+from .toc import _get_section_hierarchy
 
 logger = structlog.get_logger()
 logger = logger.bind(module="[toc_ai]")
@@ -18,20 +19,27 @@ logger = logger.bind(module="[toc_ai]")
 # ---------------------------------------------------------------------
 
 
-class TOCLine(BaseModel):
+class TOC_LLM_SECTION(BaseModel):
     level: int
     title: str
-    page: int
+    page: int | None = Field(
+        ..., description="Page number of the section. It can be empty if not found."
+    )
 
 
-class TOC_JSON(BaseModel):
-    lines: list[TOCLine]
+class TOC_LLM(BaseModel):
+    sections: list[TOC_LLM_SECTION] = Field(
+        ...,
+        description="List of TOC sections. Pay attention to the indentation level, chapter parts and hierarchy.",
+    )
 
     def to_list(self) -> list[list[int | str]]:
         """
         Convert each TOC line to a 3-element list [level, title, page].
         """
-        return [[line.level, line.title, line.page] for line in self.lines]
+        return [
+            [section.level, section.title, section.page] for section in self.sections
+        ]
 
 
 # ---------------------------------------------------------------------
@@ -101,7 +109,7 @@ def extract_pdf_pages_as_images(pdf_path: str, page_numbers: list[int]) -> list[
     return images_as_bytes
 
 
-def extract_toc_json(pdf_path: str, toc_pages: list[int]) -> TOC_JSON:
+def extract_toc_llm(pdf_path: str, toc_pages: list[int]) -> TOC_LLM:
     """
     Extract table of contents from a PDF file.
 
@@ -122,22 +130,15 @@ def extract_toc_json(pdf_path: str, toc_pages: list[int]) -> TOC_JSON:
     start_page = min(toc_pages)
     end_page = max(toc_pages)
     toc_raw_text = extract_pdf_text_range(pdf_path, start_page, end_page)
-
-    # Extract images for TOC pages
     images_bytes = extract_pdf_pages_as_images(pdf_path, toc_pages)
 
-    # Build message content with text and images
     message_content = []
-
-    # Add text block
     message_content.append(
         {
             "type": "text",
             "text": f"Here is the extracted text from pages {start_page} to {end_page}:\n{toc_raw_text}",
         }
     )
-
-    # Add image blocks
     for idx, image_data in enumerate(images_bytes, start=start_page):
         encoded_image = base64.b64encode(image_data).decode("utf-8")
         message_content.append(
@@ -148,7 +149,7 @@ def extract_toc_json(pdf_path: str, toc_pages: list[int]) -> TOC_JSON:
         )
 
     # Call GPT to extract structured TOC
-    final_toc = lumos.call_ai(
+    toc_llm = lumos.call_ai(
         messages=[
             {
                 "role": "system",
@@ -180,16 +181,14 @@ def extract_toc_json(pdf_path: str, toc_pages: list[int]) -> TOC_JSON:
             },
         ],
         model="gpt-4o",
-        response_format=TOC_JSON,
+        response_format=TOC_LLM,
     )
 
-    logger.info("extracted_toc", num_entries=len(final_toc.lines))
-    return final_toc
+    logger.info("extracted_toc", num_entries=len(toc_llm.sections))
+    return toc_llm
 
 
-def get_offset(
-    top_level_toc: TOC_JSON, doc_pages: list[str], start_offset: int = 0
-) -> int:
+def get_offset(toc_llm: TOC_LLM, doc_pages: list[str], start_offset: int = 0) -> int:
     """Calculate offset between reported page numbers and actual PDF page numbers.
 
     Args:
@@ -202,24 +201,23 @@ def get_offset(
     """
     logger.info(
         "calculating_page_offset",
-        num_entries=len(top_level_toc.lines),
+        num_entries=len(toc_llm.sections),
         start_offset=start_offset,
     )
     offsets = []
 
-    entries = top_level_toc.lines
-    for toc_entry in entries:
+    for section in toc_llm.sections:
         logger.debug(
-            "searching_for_title", title=toc_entry.title, predicted_page=toc_entry.page
+            "searching_for_title", title=section.title, predicted_page=section.page
         )
         # Search through pages for title
         for page_num, page_text in enumerate(
             doc_pages[start_offset:], start=start_offset
         ):
-            if toc_entry.title in page_text:
+            if section.title in page_text:
                 # Found title, calculate offset
                 actual_page = page_num
-                predicted_page = toc_entry.page - 1  # Convert to 0-based
+                predicted_page = section.page - 1  # Convert to 0-based
                 offset = actual_page - predicted_page
                 offsets.append(offset)
                 logger.debug(
@@ -231,7 +229,7 @@ def get_offset(
                 )
                 break
         else:
-            logger.warning("title_not_found", title=toc_entry.title)
+            logger.warning("title_not_found", title=section.title)
 
     if not offsets:
         logger.error("no_offsets_found")
@@ -250,9 +248,6 @@ def get_offset(
 def extract_toc_ai(
     pdf_path: str, toc_page_range: tuple[int, int] | None = None
 ) -> list[list[int | str]]:
-    # toc_page_range is (start_page, end_page) inclusive as 1-based
-    logger.info("starting_toc_extraction", pdf_path=pdf_path)
-
     # First try to get TOC from PDF metadata
     with fitz.open(pdf_path) as doc:
         pages_str = [p.get_text() for p in doc.pages()]
@@ -267,15 +262,22 @@ def extract_toc_ai(
         toc_pages = list(range(start_page, end_page + 1))
 
     # Extract TOC using AI
-    toc_json = extract_toc_json(pdf_path, toc_pages)
-    offset = get_offset(toc_json, pages_str, start_offset=max(toc_pages))
+    toc_llm = extract_toc_llm(pdf_path, toc_pages)
+    toc_list = toc_llm.to_list()
+    with fitz.open(pdf_path) as doc:
+        total_pages = len(doc)
+    sections = _get_section_hierarchy(toc_list, total_pages)
+    rich_view_toc_sections(sections)
 
-    for entry in toc_json.lines:
-        entry.page += offset
-    return toc_json.to_list()
+    logger.info("calculating_page_offset", start_offset=max(toc_pages))
+    offset = get_offset(toc_llm, pages_str, start_offset=max(toc_pages))
+
+    for section in toc_llm.sections:
+        section.page += offset
+    return toc_llm.to_list()
 
 
-def extract_page_content_range(
+def extract_text_image_pairs(
     pdf_path: str, start_page: int, end_page: int
 ) -> list[tuple[str, bytes | None]]:
     """
@@ -289,9 +291,6 @@ def extract_page_content_range(
     Returns:
         List of tuples (text, image_bytes) for each page in range
     """
-    logger.debug(
-        "extracting_page_content_range", start_page=start_page, end_page=end_page
-    )
 
     # Get text content
     text_content = extract_pdf_text_range(pdf_path, start_page, end_page)
@@ -323,11 +322,11 @@ def detect_toc_pages(pdf_path: str, max_pages: int = 15) -> list[int]:
     logger.info("detecting_toc_pages", pdf_path=pdf_path, max_pages=max_pages)
 
     # Extract content from first max_pages
-    content = extract_page_content_range(pdf_path, 1, max_pages)
+    text_image_pairs = extract_text_image_pairs(pdf_path, 1, max_pages)
 
     # Build message content for AI
     message_content = []
-    for page_num, (text, image) in enumerate(content, start=1):
+    for page_num, (text, image) in enumerate(text_image_pairs, start=1):
         # Add text block
         message_content.append({"type": "text", "text": f"Page {page_num}:\n{text}"})
 
@@ -390,15 +389,20 @@ class CLI:
         toc_page_range = None
         if start_page and end_page:
             toc_page_range = (start_page, end_page)
-        return extract_toc_ai(pdf_path, toc_page_range)
+
+        with fitz.open(pdf_path) as doc:
+            total_pages = len(doc)
+        toc_list = extract_toc_ai(pdf_path, toc_page_range)
+        sections = _get_section_hierarchy(toc_list, total_pages)
+        rich_view_toc_sections(sections)
 
     def offset(
         self, pdf_path: str, start_page: int, end_page: int
     ) -> list[list[int | str]]:
-        toc_json = extract_toc_json(pdf_path, [start_page, end_page])
+        toc_llm = extract_toc_llm(pdf_path, [start_page, end_page])
         with fitz.open(pdf_path) as doc:
             pages_str = [p.get_text() for p in doc.pages()]
-        return get_offset(toc_json, pages_str, start_offset=end_page)
+        return get_offset(toc_llm, pages_str, start_offset=end_page)
 
 
 if __name__ == "__main__":
