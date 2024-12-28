@@ -11,3 +11,5 @@ lumos/dev/*
 _experimental/
 *.json
 *.pdf
+
+*out.txt

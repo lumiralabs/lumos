@@ -4,6 +4,10 @@ from pydantic import BaseModel, Field
 from .models import Section, TOC
 from lumos import lumos
 from typing import Literal
+import structlog
+from .toc_ai import extract_toc_ai
+
+logger = structlog.get_logger(__name__)
 
 
 def extract_chapters_by_pattern(sections: list[Section]) -> list[Section]:
@@ -168,7 +172,8 @@ def extract_toc(pdf_path: str) -> TOC:
         toc = doc.get_toc()
 
     if not toc:
-        raise ValueError("No TOC found in the PDF.")
+        logger.info("no_toc_found. Attempting AI extraction", pdf_path=pdf_path)
+        toc = extract_toc_ai(pdf_path)
 
     sections = _get_section_hierarchy(toc, total_pages)
 

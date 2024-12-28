@@ -53,6 +53,7 @@ def rich_view_toc_sections(
     sections: list[Section],
     level: int | None = None,
 ) -> None:
+    assert isinstance(sections, list)
     console = Console()
 
     tree = Tree("[bold magenta]Table of Contents[/bold magenta]")
