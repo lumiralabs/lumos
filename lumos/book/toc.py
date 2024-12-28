@@ -166,25 +166,23 @@ def reset_section_levels(
 # -----------------------------------------------------------------------------
 
 
-def extract_toc_from_metadata(pdf_path: str) -> TOC:
+def extract_toc_from_metadata(pdf_path: str) -> list[list[int | str]]:
     with fitz.open(pdf_path) as doc:
-        toc = doc.get_toc()
-        total_pages = len(doc)
+        toc_list = doc.get_toc()
 
-    sections = _get_section_hierarchy(toc, total_pages)
-    return TOC.model_validate({"sections": sections})
+    return toc_list
 
 
 def extract_toc(pdf_path: str) -> TOC:
-    toc = extract_toc_from_metadata(pdf_path)
-    if not toc:
+    toc_list = extract_toc_from_metadata(pdf_path)
+    if not toc_list:
         logger.info("no_toc_found. Attempting AI extraction", pdf_path=pdf_path)
-        toc = extract_toc_ai(pdf_path)
+        toc_list = extract_toc_ai(pdf_path)
 
     with fitz.open(pdf_path) as doc:
         total_pages = len(doc)
 
-    sections = _get_section_hierarchy(toc, total_pages)
+    sections = _get_section_hierarchy(toc_list, total_pages)
     return TOC.model_validate({"sections": sections})
 
 

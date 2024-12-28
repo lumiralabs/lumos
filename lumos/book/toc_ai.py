@@ -5,6 +5,7 @@ import fitz  # PyMuPDF
 from pdf2image import convert_from_path
 from pydantic import BaseModel, Field
 import structlog
+import fire
 
 from lumos import lumos
 
@@ -100,7 +101,7 @@ def extract_pdf_pages_as_images(pdf_path: str, page_numbers: list[int]) -> list[
     return images_as_bytes
 
 
-def extract_toc(pdf_path: str, toc_pages: list[int]) -> list[list[int | str]]:
+def extract_toc_json(pdf_path: str, toc_pages: list[int]) -> TOC_JSON:
     """
     Extract table of contents from a PDF file.
 
@@ -266,12 +267,12 @@ def extract_toc_ai(
         toc_pages = list(range(start_page, end_page + 1))
 
     # Extract TOC using AI
-    toc = extract_toc(pdf_path, toc_pages)
-    offset = get_offset(toc.lines, pages_str, start_offset=max(toc_pages))
+    toc_json = extract_toc_json(pdf_path, toc_pages)
+    offset = get_offset(toc_json, pages_str, start_offset=max(toc_pages))
 
-    for entry in toc.lines:
+    for entry in toc_json.lines:
         entry.page += offset
-    return toc.to_list()
+    return toc_json.to_list()
 
 
 def extract_page_content_range(
@@ -369,3 +370,36 @@ def detect_toc_pages(pdf_path: str, max_pages: int = 15) -> list[int]:
 
     logger.info("detected_toc_pages", pages=toc_pages.pages)
     return toc_pages.pages
+
+
+# ---------------------------------------------------------------------
+# CLI Commands
+# ---------------------------------------------------------------------
+
+
+class CLI:
+    """CLI commands for working with book TOCs"""
+
+    def detect(self, pdf_path: str, max_pages: int = 15) -> list[int]:
+        pages = detect_toc_pages(pdf_path, max_pages)
+        print(pages)
+
+    def extract(
+        self, pdf_path: str, start_page: int | None = None, end_page: int | None = None
+    ) -> list[list[int | str]]:
+        toc_page_range = None
+        if start_page and end_page:
+            toc_page_range = (start_page, end_page)
+        return extract_toc_ai(pdf_path, toc_page_range)
+
+    def offset(
+        self, pdf_path: str, start_page: int, end_page: int
+    ) -> list[list[int | str]]:
+        toc_json = extract_toc_json(pdf_path, [start_page, end_page])
+        with fitz.open(pdf_path) as doc:
+            pages_str = [p.get_text() for p in doc.pages()]
+        return get_offset(toc_json, pages_str, start_offset=end_page)
+
+
+if __name__ == "__main__":
+    fire.Fire(CLI)
