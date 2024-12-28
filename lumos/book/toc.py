@@ -88,7 +88,7 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
     return chapters
 
 
-def _get_section_hierarchy(toc: list[list], total_pages: int) -> list[Section]:
+def toc_list_to_toc_sections(toc: list[list], total_pages: int) -> list[Section]:
     """Build a hierarchical structure of sections from the TOC."""
 
     def recursive_parse(level, toc, index, parent_end_page, parent_level=""):
@@ -99,10 +99,17 @@ def _get_section_hierarchy(toc: list[list], total_pages: int) -> list[Section]:
             if curr_level < level:
                 break
 
+            # Skip entries with no page number
+            if page is None:
+                ## dangerous because it will skip parts and cause us to keep BONUS parts - we also lose a heirarchy here
+                logger.error("skipping_entry_with_no_page_number", obj=toc[index])
+                index += 1
+                continue
+
             end_page = parent_end_page
             for next_index in range(index + 1, len(toc)):
                 next_level, _, next_page = toc[next_index]
-                if next_level <= curr_level:
+                if next_level <= curr_level and next_page is not None:
                     end_page = next_page - 1
                     break
 
@@ -128,6 +135,26 @@ def _get_section_hierarchy(toc: list[list], total_pages: int) -> list[Section]:
 
     top_level_sections, _ = recursive_parse(1, toc, 0, total_pages)
     return top_level_sections
+
+
+def toc_sections_to_toc_list(sections: list[Section]) -> list[list]:
+    """Convert a hierarchical structure of sections to a flat TOC list."""
+
+    def recursive_flatten(section: Section) -> list[list]:
+        flattened = []
+        level = len(section.level.split("."))
+        flattened.append([level, section.title, section.start_page])
+        if section.subsections:
+            for subsection in section.subsections:
+                flattened.extend(recursive_flatten(subsection))
+
+        return flattened
+
+    toc_list = []
+    for section in sections:
+        toc_list.extend(recursive_flatten(section))
+
+    return toc_list
 
 
 def reset_section_levels(
@@ -197,8 +224,8 @@ def extract_toc(pdf_path: str) -> TOC:
     with fitz.open(pdf_path) as doc:
         total_pages = len(doc)
 
-    sections = _get_section_hierarchy(toc_list, total_pages)
-    return TOC(sections=sections)
+    sections = toc_list_to_toc_sections(toc_list, total_pages)
+    return TOC(sections=sections, total_pages=total_pages)
 
 
 def sanitize_toc(toc: TOC, type: Literal["chapter"] | None = None) -> TOC:
@@ -236,8 +263,10 @@ def cli(
         total_pages = len(doc)
     toc_list = extract_toc_from_metadata(pdf_path)
     toc_list = edit_toc(toc_list, level=level)
-    sections = _get_section_hierarchy(toc_list, total_pages)
-    toc_sanitized = sanitize_toc(TOC(sections=sections), type=type)
+    sections = toc_list_to_toc_sections(toc_list, total_pages)
+    toc_sanitized = sanitize_toc(
+        TOC(sections=sections, total_pages=total_pages), type=type
+    )
     rich_view_toc_sections(toc_sanitized.sections)
 
 

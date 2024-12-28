@@ -5,6 +5,7 @@ import fire
 from unstructured.partition.auto import partition
 from .models import Book
 from .toc import extract_toc, sanitize_toc
+from .toc_ai import extract_toc as extract_toc_ai
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
 from .visualizer import rich_view_chunks, rich_view_sections, rich_view_toc_sections
 from .utils import extract_pdf_metadata
@@ -16,7 +17,17 @@ logger = structlog.get_logger()
 def from_pdf_path(pdf_path: str) -> Book:
     """Create a Book object from a PDF file."""
     metadata = extract_pdf_metadata(pdf_path)
-    toc = extract_toc(pdf_path)
+
+    try:
+        toc = extract_toc(pdf_path)
+    except Exception as e:
+        logger.error("error_extracting_toc. Attempting AI extraction", error=e)
+        try:
+            toc = extract_toc_ai(pdf_path)
+        except Exception as e:
+            logger.error("error_extracting_toc_ai", error=e)
+            raise
+
     print("TOC:")
     rich_view_toc_sections(toc.sections)
     toc = sanitize_toc(toc, type="chapter")

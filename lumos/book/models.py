@@ -53,6 +53,9 @@ class PDFMetadata(BaseModel):
 class TOC(BaseModel):
     sections: list["Section"]
 
+    def from_list(cls, lst: list[list]):
+        return cls(sections=lst)
+
 
 class Book(BaseModel):
     metadata: PDFMetadata
