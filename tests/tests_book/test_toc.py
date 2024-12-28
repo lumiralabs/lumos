@@ -1,5 +1,5 @@
 import pytest
-from lumos.book.toc import extract_toc, sanitize_toc
+from lumos.book.toc import extract_toc_from_metadata, sanitize_toc
 from rich.tree import Tree
 from rich.console import Console
 from lumos.book.visualizer import _build_section_tree
@@ -12,7 +12,7 @@ def test_extract_toc(book_name):
         expected_toc = f.read()
 
     pdf_path = f"tests/data/{book_name}.pdf"
-    toc = extract_toc(pdf_path)
+    toc = extract_toc_from_metadata(pdf_path)
     tree = Tree("Table of Contents")
     _build_section_tree(toc.sections, tree)
     console = Console(record=True, width=500)
@@ -29,7 +29,7 @@ def test_sanitize_toc(book_name):
         expected_toc = f.read()
 
     pdf_path = f"tests/data/{book_name}.pdf"
-    toc = extract_toc(pdf_path)
+    toc = extract_toc_from_metadata(pdf_path)
     sanitized_toc = sanitize_toc(toc, type="chapter")
     tree = Tree("Sanitized Table of Contents")
     _build_section_tree(sanitized_toc.sections, tree)
