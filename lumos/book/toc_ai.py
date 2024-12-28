@@ -110,6 +110,10 @@ def extract_toc(pdf_path: str, toc_pages: list[int]) -> list[list[int | str]]:
 
     Returns:
         List of [level, title, page] entries representing the table of contents
+
+    TODO:
+    - hallucinations of page numbers for parts which break the page number boundries
+    - indentation issue breaks the heirarchy, but atleast all leaf sections are mostly valid
     """
     logger.info("extracting_toc", pdf_path=pdf_path, toc_pages=toc_pages)
 
@@ -151,6 +155,7 @@ def extract_toc(pdf_path: str, toc_pages: list[int]) -> list[list[int | str]]:
                     "You are a helpful assistant that can extract a Table of Contents. "
                     "You have BOTH the extracted text and direct images for the same pages. "
                     "Use them together to produce a final, accurate TOC. "
+                    "The top level section is 1, and the next level is 2, etc. "
                     "Follow these rules:\n"
                     "1. Preserve the exact titles as they appear in the text\n"
                     "2. Keep the same page numbers as in the original\n"
@@ -196,12 +201,13 @@ def get_offset(
     """
     logger.info(
         "calculating_page_offset",
-        num_entries=len(top_level_toc),
+        num_entries=len(top_level_toc.lines),
         start_offset=start_offset,
     )
     offsets = []
 
-    for toc_entry in top_level_toc:
+    entries = top_level_toc.lines
+    for toc_entry in entries:
         logger.debug(
             "searching_for_title", title=toc_entry.title, predicted_page=toc_entry.page
         )
@@ -302,7 +308,7 @@ def extract_page_content_range(
     return content
 
 
-def detect_toc_pages(pdf_path: str, max_pages: int = 10) -> list[int]:
+def detect_toc_pages(pdf_path: str, max_pages: int = 15) -> list[int]:
     """
     Detect which pages in the first max_pages contain table of contents.
 

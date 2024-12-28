@@ -5,7 +5,7 @@ from rich.console import Console
 from lumos.book.visualizer import _build_section_tree
 
 
-@pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
+@pytest.mark.parametrize("book_name", ["asyncio", "almanack", "portfolio"])
 def test_extract_toc(book_name):
     toc_file = f"tests/data/{book_name}_toc.txt"
     with open(toc_file, "r") as f:
@@ -19,10 +19,13 @@ def test_extract_toc(book_name):
     console.print(tree)
     rich_tree_str = console.export_text()
 
+    # with open(f"tests/data/{book_name}_toc_out.txt", "w") as f:
+    # f.write(rich_tree_str)
+
     assert rich_tree_str.strip() == expected_toc.strip()
 
 
-@pytest.mark.parametrize("book_name", ["asyncio", "almanack"])
+@pytest.mark.parametrize("book_name", ["asyncio", "almanack", "portfolio"])
 def test_sanitize_toc(book_name):
     expected_file = f"tests/data/{book_name}_toc_sanitized.txt"
     with open(expected_file, "r") as f:
@@ -37,8 +40,8 @@ def test_sanitize_toc(book_name):
     console.print(tree)
     rich_tree_str = console.export_text()
 
-    output_file = f"tests/data/{book_name}_toc_sanitized_out.txt"
-    with open(output_file, "w") as f:
-        f.write(rich_tree_str)
+    # output_file = f"tests/data/{book_name}_toc_sanitized_out.txt"
+    # with open(output_file, "w") as f:
+    # f.write(rich_tree_str)
 
     assert rich_tree_str.strip() == expected_toc.strip()
