@@ -4,7 +4,7 @@ from typing import Literal
 import fire
 from unstructured.partition.auto import partition
 from .models import Book
-from .toc import extract_toc, sanitize_toc
+from .toc import sanitize_toc, extract_toc
 from .toc_ai import extract_toc as extract_toc_ai
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
 from .visualizer import rich_view_chunks, rich_view_sections, rich_view_toc_sections
@@ -18,6 +18,7 @@ def from_pdf_path(pdf_path: str) -> Book:
     """Create a Book object from a PDF file."""
     metadata = extract_pdf_metadata(pdf_path)
 
+    # toc = extract_toc_ai(pdf_path)
     try:
         toc = extract_toc(pdf_path)
     except Exception as e:
@@ -42,7 +43,7 @@ def from_pdf_path(pdf_path: str) -> Book:
         api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
         partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
         partition_by_api=True,
-        strategy="fast",
+        # strategy="fast",
         include_metadata=True,
     )
     logger.info("[book-parser] Extracted book elements", len=len(book_elements))

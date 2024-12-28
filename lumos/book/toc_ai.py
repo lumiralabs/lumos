@@ -11,7 +11,6 @@ from lumos import lumos
 from .toc import TOC, toc_list_to_toc_sections
 
 logger = structlog.get_logger()
-logger = logger.bind(module="[toc_ai]")
 
 
 # ---------------------------------------------------------------------
@@ -56,13 +55,11 @@ def extract_all_pdf_text(pdf_path: str) -> dict[int, str]:
       # pages_text[1] -> text of the first page
       # pages_text[2] -> text of the second page, etc.
     """
-    logger.info("extracting_all_pdf_text", pdf_path=pdf_path)
     pages_text: dict[int, str] = {}
     with open(pdf_path, "rb") as f:
         doc = fitz.open(f)
         for page_index, page in enumerate(doc, start=1):
             pages_text[page_index] = page.get_text()
-    logger.debug("extracted_pdf_text", num_pages=len(pages_text))
     return pages_text
 
 
@@ -73,7 +70,7 @@ def extract_pdf_text_range(
     Extracts text for the pages from start_page to end_page (inclusive),
     returning it all as one concatenated string. (1-based)
     """
-    logger.debug("extracting_pdf_text_range", start_page=start_page, end_page=end_page)
+    logger.debug("extracting_pdf_text_range", range=(start_page, end_page))
     all_pages_text = extract_all_pdf_text(pdf_path)
     text_segments = []
     if end_page is None:
@@ -94,7 +91,6 @@ def extract_pdf_pages_as_images(pdf_path: str, page_numbers: list[int]) -> list[
     :param page_numbers: 1-based page numbers to extract.
     :return: A list of bytes (each representing a single page image in JPG format).
     """
-    logger.debug("extracting_pdf_pages_as_images", page_numbers=page_numbers)
     images_as_bytes = []
     for page_number in page_numbers:
         # pdf2image expects 1-based pages, so we can use page_number directly
@@ -111,8 +107,15 @@ def extract_pdf_pages_as_images(pdf_path: str, page_numbers: list[int]) -> list[
             image.save(buffer, format="JPEG")
             buffer.seek(0)
             images_as_bytes.append(buffer.read())
-    logger.debug("extracted_pdf_images", num_images=len(images_as_bytes))
     return images_as_bytes
+
+
+def search_for_title(title: str, doc_pages: list[str], start_offset: int = 0) -> int:
+    """Search for a title in the document pages, starting from start_offset."""
+    for page_num, page_text in enumerate(doc_pages[start_offset:], start=start_offset):
+        if title in page_text:
+            return page_num
+    return None
 
 
 def extract_toc_llm(
@@ -250,7 +253,9 @@ def get_offset(toc_lines: list, doc_pages: list[str], start_offset: int = 0) -> 
     return most_common
 
 
-def extract_toc_ai(pdf_path: str, toc_page_range: tuple[int, int] | None = None) -> TOC:
+def extract_toc_ai(
+    pdf_path: str, toc_page_range: tuple[int, int] | None = None
+) -> tuple[list[list[int | str]], tuple[int, int]]:
     if toc_page_range is None:
         toc_pages = detect_toc_pages(pdf_path)
         toc_page_range = (min(toc_pages), max(toc_pages))
@@ -380,6 +385,98 @@ def detect_toc_pages(pdf_path: str, max_pages: int = 15) -> list[int]:
     return toc_pages.pages
 
 
+def detect_page_for_title(
+    title: str, pdf_path: str, page_range: tuple[int, int]
+) -> int | None:
+    text_image_pairs = extract_text_image_pairs(pdf_path, page_range[0], page_range[1])
+    """
+    Given a title, find the page in the text_image_pairs that contains the title.
+    This is used to detect chapter headings.
+    """
+
+    class PageMatch(BaseModel):
+        match: bool = Field(
+            ..., description="True if the title appears as a heading, False otherwise"
+        )
+        reason: str = Field(..., description="Reason for the match or mismatch")
+        confidence: float = Field(
+            ...,
+            description="Confidence score between 0-1 that this is a section heading",
+        )
+
+    logger.info("searching_for_title", title=title)
+
+    # Build message content for AI, starting from the end
+    responses = []
+    for text, image in reversed(text_image_pairs):
+        # Add text block
+        message_content = []
+        message_content.append({"type": "text", "text": text})
+
+        # Add image block if available
+        if image:
+            encoded_image = base64.b64encode(image).decode("utf-8")
+            message_content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{encoded_image}"},
+                }
+            )
+
+        # First message to set context
+        result = lumos.call_ai(
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful assistant that can identify section headings in a book. "
+                        "You will be given a page of a book and you need to decide if the title appears as a heading. "
+                        "Look for these characteristics of a heading:\n"
+                        "- Appears prominently at the top of the page\n"
+                        "- Larger or different font than body text\n"
+                        "- May have decorative elements or spacing around it\n"
+                        "- Starts a new section or chapter"
+                        " Be very conservative in your answer. We are testing this on a few pages so be strict. If you are not sure, return False."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"Find the page where this title appears as a heading: {title}\n\nHere are the pages to check: ",
+                },
+                {"role": "user", "content": message_content},
+            ],
+            model="gpt-4o",
+            response_format=PageMatch,
+        )
+
+        responses.append(result)
+
+    class PageMatch2(BaseModel):
+        page: int = Field(
+            ..., description="Page number where the title appears as a heading"
+        )
+        reason: str = Field(..., description="Reason for the match or mismatch")
+
+    query_str = "\n".join(
+        [f"Page ({i}): {r.reason}" for i, r in enumerate(responses, 1)]
+    )
+    print(query_str)
+    ret = lumos.call_ai(
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that can identify section headings in a book. You will be given a list of responses from an AI and you need to determine the page number where the title appears as a heading. Remember that the indexing starts from 1.",
+            },
+            {"role": "user", "content": f"Here are the responses: {responses}"},
+        ],
+        model="gpt-4o",
+        response_format=PageMatch2,
+    )
+    print(ret.model_dump_json())
+
+    return page_range[1] - ret.page + 1
+
+
 # ---------------------------------------------------------------------
 # CLI Commands
 # ---------------------------------------------------------------------
@@ -399,10 +496,7 @@ class CLI:
         if start_page and end_page:
             toc_page_range = (start_page, end_page)
 
-        # with fitz.open(pdf_path) as doc:
-        #     total_pages = len(doc)
-
-        _toc_list, _ = extract_toc_ai(pdf_path, toc_page_range)
+        extract_toc_ai(pdf_path, toc_page_range)
         # sections = _get_section_hierarchy(toc_list, total_pages)
         # rich_view_toc_sections(sections)
 
