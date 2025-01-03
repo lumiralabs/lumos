@@ -198,7 +198,7 @@ def extract_toc_llm(
     return toc_llm
 
 
-def get_offset(toc_lines: list, doc_pages: list[str], start_offset: int = 0) -> int:
+def get_offset(toc: TOC_LLM, doc_pages: list[str], start_offset: int = 0) -> int:
     """Calculate offset between reported page numbers and actual PDF page numbers.
 
     Args:
@@ -211,14 +211,18 @@ def get_offset(toc_lines: list, doc_pages: list[str], start_offset: int = 0) -> 
     """
     logger.info(
         "calculating_page_offset",
-        num_entries=len(toc_lines),
+        num_entries=len(toc.sections),
         start_offset=start_offset,
     )
     offsets = []
 
-    for _level, title, page in toc_lines:
+    for section in toc.sections:
+        _, title, page = section.level, section.title, section.page
         logger.debug("searching_for_title", title=title, predicted_page=page)
         # Search through pages for title
+        if page is None:
+            logger.warning("None page - skipping", title=title)
+            continue
         for page_num, page_text in enumerate(
             doc_pages[start_offset:], start=start_offset
         ):
