@@ -43,7 +43,7 @@ def from_pdf_path(pdf_path: str) -> Book:
         api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
         partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
         partition_by_api=True,
-        # strategy="fast",
+        strategy="fast",
         include_metadata=True,
     )
     logger.info("[book-parser] Extracted book elements", len=len(book_elements))
