@@ -3,15 +3,60 @@ import pickle
 from typing import Literal
 import fire
 from unstructured.partition.auto import partition
-from .models import Book
-from .toc import sanitize_toc, extract_toc
-from .toc_ai import extract_toc as extract_toc_ai
+from .models import Book, PDFMetadata
+from .toc import (
+    sanitize_toc,
+    extract_toc,
+    extract_toc_from_md,
+    toc_list_to_toc_sections,
+)
+from .toc_ai import extract_toc as extract_toc_ai, sanitize_toc_list
 from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
 from .visualizer import rich_view_chunks, rich_view_sections, rich_view_toc_sections
-from .utils import extract_pdf_metadata
+from .pdf_utils import extract_pdf_metadata
+from .markdown_utils import get_section_text_map, convert_pdf_to_markdown
+from .doc_type import is_two_column_scientific_paper
 import structlog
 
 logger = structlog.get_logger()
+
+
+def from_md_path(md_file: str) -> Book:
+    section_text_map = get_section_text_map(md_file)
+    toc_list = extract_toc_from_md(md_file)
+    toc_list_san = sanitize_toc_list(toc_list)
+    sections = toc_list_to_toc_sections(toc_list_san)
+
+    def get_elements(section):
+        if section.subsections:
+            for subsec in section.subsections:
+                subsec.elements = get_elements(subsec)
+        if section.title in section_text_map:
+            section.elements = section_text_map[section.title].split("\n\n")
+        return section.elements
+
+    def get_chunks(section):
+        if section.subsections:
+            for subsec in section.subsections:
+                subsec.chunks = get_chunks(subsec)
+        if section.title in section_text_map:
+            section.chunks = section_text_map[section.title].split("\n\n")
+        return section.chunks
+
+    for section in sections:
+        section.elements = get_elements(section)
+        section.chunks = get_chunks(section)
+
+    # Return book with sanitized sections
+    metadata = PDFMetadata(
+        title=os.path.basename(md_file),
+        author="Unknown",
+        subject=None,
+        keywords=None,
+        path=md_file,
+        toc=toc_list,
+    )
+    return Book(metadata=metadata, sections=sections)
 
 
 def from_pdf_path(pdf_path: str) -> Book:
@@ -67,8 +112,16 @@ def from_pdf_path(pdf_path: str) -> Book:
 
 
 def parse(pdf_path: str):
-    book = from_pdf_path(pdf_path)
-    return book.flatten_sections(only_leaf=True), book.flatten_chunks(dict=True)
+    if is_two_column_scientific_paper(pdf_path):
+        print("Two column scientific paper detected")
+        md_path = convert_pdf_to_markdown(pdf_path)
+        book = from_md_path(md_path)
+    else:
+        book = from_pdf_path(pdf_path)
+
+    sections = book.flatten_sections(only_leaf=True)
+    # chunks = book.flatten_chunks(dict=True)
+    return sections, None
 
 
 def dev(

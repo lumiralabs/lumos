@@ -1,5 +1,8 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Any, Literal
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 class Section(BaseModel):
@@ -11,8 +14,8 @@ class Section(BaseModel):
         None,
         description="The type of the section like introduction, contents, chapter, index, appendix, etc.",
     )
-    start_page: int
-    end_page: int
+    start_page: int | None = None
+    end_page: int | None = None
     subsections: list["Section"] | None = None
     chunks: list[Any] | None = None
     elements: list[Any] | None = None
@@ -40,6 +43,17 @@ class Section(BaseModel):
                 chunks.extend(subsection.flatten_chunks())
         return chunks
 
+    @field_validator("end_page")
+    def end_page_gt_start_page(cls, v, info):
+        if v is not None and info.data["start_page"] is not None:
+            if v < info.data["start_page"]:
+                logger.error(
+                    f"End page {v} is less than or equal to start page {info.data['start_page']}"
+                )
+                return v
+                # raise ValueError("End page must be greater than start page")
+        return v
+
 
 class PDFMetadata(BaseModel):
     title: str
@@ -55,6 +69,10 @@ class TOC(BaseModel):
 
     def from_list(cls, lst: list[list]):
         return cls(sections=lst)
+
+
+class TOC_LIST(BaseModel):
+    sections: list[list]
 
 
 class Book(BaseModel):
@@ -116,7 +134,10 @@ def _get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
     def flatten_section(section: Section, prefix: str = "", number: str = "") -> dict:
         content = ""
         if section.elements:
-            content = "\n\n".join(element.text for element in section.elements)
+            if isinstance(section.elements[0], str):
+                content = "\n\n".join(section.elements)
+            else:
+                content = "\n\n".join(element.text for element in section.elements)
 
         section_dict = {
             "level": number if number else "",

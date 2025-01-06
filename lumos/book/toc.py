@@ -88,51 +88,95 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
     return chapters
 
 
-def toc_list_to_toc_sections(toc: list[list], total_pages: int) -> list[Section]:
-    """Build a hierarchical structure of sections from the TOC."""
+def toc_list_to_toc_sections(
+    toc: list[list], total_pages: int | None = None
+) -> list[Section]:
+    """
+    Build a hierarchical structure of sections from the TOC.
+    If total_pages is None, every Section is assigned start_page=end_page=None
+    (page numbers are effectively ignored).
+    """
 
-    def recursive_parse(level, toc, index, parent_end_page, parent_level=""):
-        sections = []
+    def recursive_parse(
+        level: int,
+        toc: list[list],
+        index: int,
+        parent_end_page: int | None,
+        parent_level: str = "",
+    ) -> tuple[list[Section], int]:
+        sections: list[Section] = []
         section_num = 1
+
         while index < len(toc):
             curr_level, title, page = toc[index]
+
+            # If we've gone back to a shallower hierarchy level, stop building here.
             if curr_level < level:
                 break
 
-            # Skip entries with no page number
-            if page is None:
-                ## dangerous because it will skip parts and cause us to keep BONUS parts - we also lose a heirarchy here
-                logger.error("skipping_entry_with_no_page_number", obj=toc[index])
-                index += 1
-                continue
+            # --------------------------------------------------------------
+            # If total_pages is None, we simply ignore page values altogether,
+            # so do NOT skip the entry if page=None. Instead, we continue building
+            # hierarchical structure and set start/end = None below.
+            # --------------------------------------------------------------
+            if total_pages is not None:
+                # Keep original behavior: skip entries that lack a page number.
+                if page is None:
+                    logger.error(
+                        "skipping_entry_with_no_page_number",
+                        obj=toc[index],
+                    )
+                    index += 1
+                    continue
 
-            end_page = parent_end_page
-            for next_index in range(index + 1, len(toc)):
-                next_level, _, next_page = toc[next_index]
-                if next_level <= curr_level and next_page is not None:
-                    end_page = next_page - 1
-                    break
-
+            # Build the final 'level' value for this section (e.g. "1", "1.1", etc.)
             current_level = (
                 f"{parent_level}{section_num}" if parent_level else str(section_num)
             )
-            subsection, next_index = recursive_parse(
-                curr_level + 1, toc, index + 1, end_page, f"{current_level}."
-            )
 
+            if total_pages is None:
+                # total_pages = None => Start and end pages become None.
+                start_page = None
+                end_page = None
+
+                # We still recurse to find subsections — parent_end_page just remains None
+                subsection, next_index = recursive_parse(
+                    curr_level + 1, toc, index + 1, None, f"{current_level}."
+                )
+            else:
+                # Existing page logic remains in place.
+                start_page = page
+                end_page = parent_end_page
+
+                # Attempt to find the next top-level entry to define end_page more narrowly
+                for next_index in range(index + 1, len(toc)):
+                    next_level, _, next_page = toc[next_index]
+                    if next_level <= curr_level and next_page is not None:
+                        end_page = next_page - 1
+                        break
+
+                # Recurse into next level
+                subsection, next_index = recursive_parse(
+                    curr_level + 1, toc, index + 1, end_page, f"{current_level}."
+                )
+
+            # Append the current section
             sections.append(
                 Section(
                     level=current_level,
                     title=title,
-                    start_page=page,
+                    start_page=start_page,
                     end_page=end_page,
                     subsections=subsection or None,
                 )
             )
+
             section_num += 1
             index = next_index
+
         return sections, index
 
+    # Kick off recursion at level=1. If total_pages is None, we pass None as parent_end_page.
     top_level_sections, _ = recursive_parse(1, toc, 0, total_pages)
     return top_level_sections
 
@@ -201,7 +245,22 @@ def reset_section_levels(
 # -----------------------------------------------------------------------------
 
 
-def extract_toc_from_metadata(pdf_path: str) -> list[list[int | str]]:
+def extract_toc_from_md(md_path: str) -> list[list[int | str]]:
+    with open(md_path, "r") as f:
+        lines = f.readlines()
+
+    toc_list = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith("#"):
+            level = len(line.split()[0])  # Count #s
+            title = line.lstrip("#").strip()
+            toc_list.append([level, title, None])
+
+    return toc_list
+
+
+def extract_toc_from_pdf_metadata(pdf_path: str) -> list[list[int | str]]:
     with fitz.open(pdf_path) as doc:
         toc_list = doc.get_toc()
 
@@ -211,7 +270,7 @@ def extract_toc_from_metadata(pdf_path: str) -> list[list[int | str]]:
 def extract_toc(pdf_path: str) -> TOC:
     logger.debug("extracting_toc", pdf_path=pdf_path)
 
-    toc_list = extract_toc_from_metadata(pdf_path)
+    toc_list = extract_toc_from_pdf_metadata(pdf_path)
 
     # if not toc_list:
     #     logger.info("no_toc_found_in_metadata", pdf_path=pdf_path)
@@ -225,7 +284,7 @@ def extract_toc(pdf_path: str) -> TOC:
         total_pages = len(doc)
 
     sections = toc_list_to_toc_sections(toc_list, total_pages)
-    return TOC(sections=sections, total_pages=total_pages)
+    return TOC(sections=sections)
 
 
 def sanitize_toc(toc: TOC, type: Literal["chapter"] | None = None) -> TOC:
@@ -261,7 +320,9 @@ def cli(
 ):
     with fitz.open(pdf_path) as doc:
         total_pages = len(doc)
-    toc_list = extract_toc_from_metadata(pdf_path)
+    toc_list = extract_toc_from_pdf_metadata(pdf_path)
+    for item in toc_list:
+        print(item)
     toc_list = edit_toc(toc_list, level=level)
     sections = toc_list_to_toc_sections(toc_list, total_pages)
     toc_sanitized = sanitize_toc(

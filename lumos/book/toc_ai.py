@@ -1,14 +1,14 @@
-import io
 import base64
 
 import fitz  # PyMuPDF
-from pdf2image import convert_from_path
+
 from pydantic import BaseModel, Field
 import structlog
 import fire
 from .visualizer import rich_view_toc_sections
 from lumos import lumos
 from .toc import TOC, toc_list_to_toc_sections
+from .pdf_utils import extract_pdf_pages_as_images
 
 logger = structlog.get_logger()
 
@@ -83,39 +83,76 @@ def extract_pdf_text_range(
     return "\n".join(text_segments)
 
 
-def extract_pdf_pages_as_images(pdf_path: str, page_numbers: list[int]) -> list[bytes]:
-    """
-    Extracts the given 1-based page numbers from a PDF as JPG images.
-
-    :param pdf_path: The path to the PDF file.
-    :param page_numbers: 1-based page numbers to extract.
-    :return: A list of bytes (each representing a single page image in JPG format).
-    """
-    images_as_bytes = []
-    for page_number in page_numbers:
-        # pdf2image expects 1-based pages, so we can use page_number directly
-        pages = convert_from_path(
-            pdf_path,
-            dpi=100,
-            first_page=page_number,
-            last_page=page_number,
-        )
-        if pages:
-            # Typically one image per page.
-            image = pages[0]
-            buffer = io.BytesIO()
-            image.save(buffer, format="JPEG")
-            buffer.seek(0)
-            images_as_bytes.append(buffer.read())
-    return images_as_bytes
-
-
 def search_for_title(title: str, doc_pages: list[str], start_offset: int = 0) -> int:
     """Search for a title in the document pages, starting from start_offset."""
     for page_num, page_text in enumerate(doc_pages[start_offset:], start=start_offset):
         if title in page_text:
             return page_num
     return None
+
+
+# ---------------------------------------------------------------------
+# TOC Extraction
+# ---------------------------------------------------------------------
+
+
+def sanitize_toc_list(toc_list: list[list]) -> list[list]:
+    """
+    Fixes heirarchy parsing errors and removes unnecessary sections.
+    Good for markdown section title parsing
+    """
+
+    toc_list_str = "\n".join(
+        [f"({idx}) L-{i[0]} > {i[1]}" for idx, i in enumerate(toc_list, 1)]
+    )
+
+    class _TOC_ITEM(BaseModel):
+        level: int
+        title: str
+
+    class TOC_LIST(BaseModel):
+        sections: list[_TOC_ITEM] = Field(
+            ...,
+            description="List of TOC sections. Pay attention to the indentation level, chapter parts and hierarchy.",
+        )
+
+        def to_list(self) -> list[list[int | str]]:
+            """
+            Convert each TOC line to a 3-element list [level, title, page = None].
+            """
+            return [[section.level, section.title, None] for section in self.sections]
+
+    toc_lis = lumos.call_ai(
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant that is assisting in cleaning the extracted Table of Contents from a arxiv document. "
+                    "We want to correct for some parsing errors in the levels and heirarchy. "
+                    "Main sections of the material should be at level 1, and sub-sections should be at level 2, etc. "
+                    "Often times there are some errors in the parsing, and sometimes the title of the book is at level 1 and the most important parts are at a below level. "
+                    "Correct for this - remove these tasks and only keep the main ones, remove appendix, only keep th "
+                    "The top level section is 1, and the next level is 2, etc. "
+                    "Follow these rules:\n"
+                    "1. Preserve the exact titles as they appear in the text\n"
+                    "2. Keep the same page numbers as in the original\n"
+                    "3. Maintain the same section numbering and hierarchy\n"
+                    "4. Include all front matter sections (Cover, Copyright, etc.)\n"
+                    "5. Do not modify or normalize the text case\n"
+                    "6. Keep the exact same order of sections"
+                    "7. Ignore References, Bibliography, Acknowledgements, Appendix, etc."
+                ),
+            },
+            {
+                "role": "user",
+                "content": toc_list_str,
+            },
+        ],
+        model="gpt-4o",
+        response_format=TOC_LIST,
+    )
+
+    return toc_lis.to_list()
 
 
 def extract_toc_llm(

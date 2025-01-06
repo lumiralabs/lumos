@@ -2,6 +2,8 @@ import json
 import hashlib
 from typing import Callable
 from functools import wraps
+import os
+import time
 
 
 # Implementing middleware using decorators
@@ -121,3 +123,90 @@ class Cache:
         # Persist to disk
         with open(self.cache_file, "w") as f:
             json.dump(self.cache, f)
+
+
+class FileCache:
+    def __init__(self, cache_dir: str = ".lumos_file_cache"):
+        self.cache_dir = cache_dir
+        os.makedirs(cache_dir, exist_ok=True)
+        self.cache_index_file = os.path.join(cache_dir, "index.json")
+
+        # Load existing cache index or create new one
+        try:
+            with open(self.cache_index_file, "r") as f:
+                self.cache_index = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.cache_index = {}
+
+    def _get_file_hash(self, file_path: str) -> str:
+        """Calculate SHA-256 hash of a file."""
+        sha256_hash = hashlib.sha256()
+        with open(file_path, "rb") as f:
+            # Read the file in chunks to handle large files
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()
+
+    def get(self, file_path: str) -> tuple[str, str] | None:
+        """
+        Get cached content for a file if it exists.
+        Returns (pdf_id, markdown_path) if cached, None otherwise.
+        """
+        file_hash = self._get_file_hash(file_path)
+        cache_entry = self.cache_index.get(file_hash)
+        if cache_entry is None:
+            return None
+
+        markdown_path = os.path.join(self.cache_dir, f"{cache_entry['pdf_id']}.md")
+        if not os.path.exists(markdown_path):
+            return None
+
+        return cache_entry["pdf_id"], markdown_path
+
+    def set(self, file_path: str, pdf_id: str, markdown_content: str) -> str:
+        """
+        Cache the markdown content for a file.
+        Returns the path to the cached markdown file.
+        """
+        file_hash = self._get_file_hash(file_path)
+        markdown_path = os.path.join(self.cache_dir, f"{pdf_id}.md")
+
+        # Save the markdown content
+        with open(markdown_path, "w") as f:
+            f.write(markdown_content)
+
+        # Update the cache index
+        self.cache_index[file_hash] = {"pdf_id": pdf_id, "timestamp": time.time()}
+
+        # Save the updated index
+        with open(self.cache_index_file, "w") as f:
+            json.dump(self.cache_index, f)
+
+        return markdown_path
+
+
+def file_cache_middleware(func: Callable) -> Callable:
+    """
+    File-based cache middleware for functions that take a file path as first argument.
+    """
+    cache = FileCache()
+
+    @wraps(func)
+    def wrapper(file_path: str, *args, **kwargs):
+        # Check cache first
+        cache_result = cache.get(file_path)
+        if cache_result is not None:
+            pdf_id, markdown_path = cache_result
+            with open(markdown_path, "r") as f:
+                return f.read()
+
+        # If not in cache, call function and cache result
+        result = func(file_path, *args, **kwargs)
+
+        # Generate a unique ID for this conversion
+        pdf_id = hashlib.sha256(f"{file_path}_{time.time()}".encode()).hexdigest()[:12]
+        cache.set(file_path, pdf_id, result)
+
+        return result
+
+    return wrapper
