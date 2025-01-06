@@ -13,3 +13,4 @@ _experimental/
 *.pdf
 
 *out.txt
+output_folder/

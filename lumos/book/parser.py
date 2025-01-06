@@ -2,6 +2,7 @@ import os
 import pickle
 from typing import Literal
 import fire
+import fitz
 from unstructured.partition.auto import partition
 from .models import Book, PDFMetadata
 from .toc import (
@@ -112,7 +113,8 @@ def from_pdf_path(pdf_path: str) -> Book:
 
 
 def parse(pdf_path: str):
-    if is_two_column_scientific_paper(pdf_path):
+    len_pages = len(fitz.open(pdf_path))
+    if is_two_column_scientific_paper(pdf_path) and len_pages < 20:
         print("Two column scientific paper detected")
         md_path = convert_pdf_to_markdown(pdf_path)
         book = from_md_path(md_path)
