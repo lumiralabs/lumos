@@ -4,14 +4,24 @@ from typing import Callable
 from functools import wraps
 import os
 import time
+import percache
+import structlog
+
+logger = structlog.get_logger()
+
+
+def init_cache(cache_path: str) -> percache.Cache:
+    """Initialize a percache Cache."""
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    return percache.Cache(cache_path)
 
 
 # Implementing middleware using decorators
 def cache_middleware(func: Callable) -> Callable:
     """
-    Cache middleware for Lumos functions.
+    Cache middleware for Lumos functions using percache.
     """
-    cache = Cache()
+    cache = init_cache(".lumos_cache")
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -37,30 +47,36 @@ def cache_middleware(func: Callable) -> Callable:
         key_str = json.dumps(key_components, sort_keys=True)
         cache_key = hashlib.sha256(key_str.encode()).hexdigest()
 
-        # Check cache
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            if response_format:
-                return response_format.model_validate(cached_result)
-            return cached_result
+        try:
+            # Check cache
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                if response_format:
+                    return response_format.model_validate(cached_result)
+                return cached_result
 
-        # If not in cache, call function and cache result
-        result = func(*args, **kwargs)
+            # If not in cache, call function and cache result
+            result = func(*args, **kwargs)
 
-        # Store in cache
-        cache_value = result.model_dump() if hasattr(result, "model_dump") else result
-        cache.set(cache_key, cache_value)
+            # Store in cache
+            cache_value = (
+                result.model_dump() if hasattr(result, "model_dump") else result
+            )
+            cache.set(cache_key, cache_value)
 
-        return result
+            return result
+        except Exception as e:
+            logger.error("Cache error", error=str(e), func=func.__name__)
+            return func(*args, **kwargs)
 
     return wrapper
 
 
 def async_cache_middleware(func: Callable) -> Callable:
     """
-    Persistent cache middleware for async Lumos functions.
+    Persistent cache middleware for async Lumos functions using percache.
     """
-    cache = Cache()
+    cache = init_cache(".lumos_cache")
 
     @wraps(func)
     async def wrapper(*args, **kwargs):
@@ -86,57 +102,35 @@ def async_cache_middleware(func: Callable) -> Callable:
         key_str = json.dumps(key_components, sort_keys=True)
         cache_key = hashlib.sha256(key_str.encode()).hexdigest()
 
-        # Check cache
-        cached_result = cache.get(cache_key)
-        if cached_result is not None:
-            if response_format:
-                return response_format.model_validate(cached_result)
-            return cached_result
+        try:
+            # Check cache
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                if response_format:
+                    return response_format.model_validate(cached_result)
+                return cached_result
 
-        # If not in cache, call function and cache result
-        result = await func(*args, **kwargs)
+            # If not in cache, call function and cache result
+            result = await func(*args, **kwargs)
 
-        # Store in cache
-        cache_value = result.model_dump() if hasattr(result, "model_dump") else result
-        cache.set(cache_key, cache_value)
+            # Store in cache
+            cache_value = (
+                result.model_dump() if hasattr(result, "model_dump") else result
+            )
+            cache.set(cache_key, cache_value)
 
-        return result
+            return result
+        except Exception as e:
+            logger.error("Cache error", error=str(e), func=func.__name__)
+            return await func(*args, **kwargs)
 
     return wrapper
 
 
-class Cache:
-    def __init__(self):
-        self.cache_file = ".lumos_cache.json"
-        # Load existing cache or create new one
-        try:
-            with open(self.cache_file, "r") as f:
-                self.cache = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.cache = {}
-
-    def get(self, key: str) -> dict | None:
-        return self.cache.get(key)
-
-    def set(self, key: str, value: dict) -> None:
-        self.cache[key] = value
-        # Persist to disk
-        with open(self.cache_file, "w") as f:
-            json.dump(self.cache, f)
-
-
 class FileCache:
     def __init__(self, cache_dir: str = ".lumos_file_cache"):
-        self.cache_dir = cache_dir
         os.makedirs(cache_dir, exist_ok=True)
-        self.cache_index_file = os.path.join(cache_dir, "index.json")
-
-        # Load existing cache index or create new one
-        try:
-            with open(self.cache_index_file, "r") as f:
-                self.cache_index = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.cache_index = {}
+        self.cache = init_cache(os.path.join(cache_dir, "file_cache"))
 
     def _get_file_hash(self, file_path: str) -> str:
         """Calculate SHA-256 hash of a file."""
@@ -147,42 +141,23 @@ class FileCache:
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
 
-    def get(self, file_path: str) -> tuple[str, str] | None:
+    def get(self, file_path: str) -> str | None:
         """
         Get cached content for a file if it exists.
-        Returns (pdf_id, markdown_path) if cached, None otherwise.
+        Returns the markdown content if cached, None otherwise.
         """
         file_hash = self._get_file_hash(file_path)
-        cache_entry = self.cache_index.get(file_hash)
+        cache_entry = self.cache.get(file_hash)
         if cache_entry is None:
             return None
+        return cache_entry["content"]
 
-        markdown_path = os.path.join(self.cache_dir, f"{cache_entry['pdf_id']}.md")
-        if not os.path.exists(markdown_path):
-            return None
-
-        return cache_entry["pdf_id"], markdown_path
-
-    def set(self, file_path: str, pdf_id: str, markdown_content: str) -> str:
+    def set(self, file_path: str, content: str) -> None:
         """
         Cache the markdown content for a file.
-        Returns the path to the cached markdown file.
         """
         file_hash = self._get_file_hash(file_path)
-        markdown_path = os.path.join(self.cache_dir, f"{pdf_id}.md")
-
-        # Save the markdown content
-        with open(markdown_path, "w") as f:
-            f.write(markdown_content)
-
-        # Update the cache index
-        self.cache_index[file_hash] = {"pdf_id": pdf_id, "timestamp": time.time()}
-
-        # Save the updated index
-        with open(self.cache_index_file, "w") as f:
-            json.dump(self.cache_index, f)
-
-        return markdown_path
+        self.cache.set(file_hash, {"content": content, "timestamp": time.time()})
 
 
 def file_cache_middleware(func: Callable) -> Callable:
@@ -193,20 +168,20 @@ def file_cache_middleware(func: Callable) -> Callable:
 
     @wraps(func)
     def wrapper(file_path: str, *args, **kwargs):
-        # Check cache first
-        cache_result = cache.get(file_path)
-        if cache_result is not None:
-            pdf_id, markdown_path = cache_result
-            with open(markdown_path, "r") as f:
-                return f.read()
+        try:
+            # Check cache first
+            cached_content = cache.get(file_path)
+            if cached_content is not None:
+                return cached_content
 
-        # If not in cache, call function and cache result
-        result = func(file_path, *args, **kwargs)
-
-        # Generate a unique ID for this conversion
-        pdf_id = hashlib.sha256(f"{file_path}_{time.time()}".encode()).hexdigest()[:12]
-        cache.set(file_path, pdf_id, result)
-
-        return result
+            # If not in cache, call function and cache result
+            result = func(file_path, *args, **kwargs)
+            cache.set(file_path, result)
+            return result
+        except Exception as e:
+            logger.error(
+                "File cache error", error=str(e), func=func.__name__, file=file_path
+            )
+            return func(file_path, *args, **kwargs)
 
     return wrapper

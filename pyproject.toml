@@ -16,6 +16,7 @@ dependencies = [
     "uvicorn>=0.34.0",
     "pymupdf>=1.25.1",
     "python-magic>=0.4.27",
+    "percache>=0.4.4",
 ]
 
 [tool.uv]
