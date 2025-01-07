@@ -17,6 +17,7 @@ dependencies = [
     "pymupdf>=1.25.1",
     "python-magic>=0.4.27",
     "percache>=0.4.4",
+    "unstructured[all-docs,md,pdf]>=0.16.12",
 ]
 
 [tool.uv]
