@@ -12,7 +12,10 @@ logger = structlog.get_logger()
 
 def init_cache(cache_path: str) -> percache.Cache:
     """Initialize a percache Cache."""
-    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+    # Only try to create directory if cache_path contains a directory component
+    directory = os.path.dirname(cache_path)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     return percache.Cache(cache_path)
 
 
