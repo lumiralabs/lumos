@@ -122,8 +122,8 @@ def parse(pdf_path: str):
         book = from_pdf_path(pdf_path)
 
     sections = book.flatten_sections(only_leaf=True)
-    # chunks = book.flatten_chunks(dict=True)
-    return sections, None
+    raw_chunks = book.flatten_chunks(dict=True)
+    return sections, raw_chunks
 
 
 def dev(
