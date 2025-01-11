@@ -3,9 +3,11 @@ import httpx
 import json
 import time
 import os
-from ..utils import file_cache_middleware
+from lumos.utils.cache import LumosCache
 
 logger = structlog.get_logger()
+
+book_cache = LumosCache("book")
 
 
 def get_section_text_map(md_file: str) -> dict[str, str]:
@@ -34,7 +36,7 @@ def get_section_text_map(md_file: str) -> dict[str, str]:
     return section2text
 
 
-@file_cache_middleware
+@book_cache
 def mathpix_pdf_to_markdown(pdf_path: str) -> str:
     """
     Convert a PDF file to markdown using Mathpix API.
