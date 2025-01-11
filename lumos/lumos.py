@@ -173,6 +173,7 @@ async def call_ai_async(
     return ret
 
 
+@ai_cache
 def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
     if isinstance(text, str):
         _text = [text]
