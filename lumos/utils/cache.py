@@ -50,11 +50,12 @@ def deserialize_from_cache(value: str, response_format: type | None = None) -> A
 
 
 class LumosCache:
-    def __init__(self, cache_name: str | None = None):
-        if cache_name is None:
-            cache_name = "lumos_cache"
+    """
+    Persistent SQlite cache
+    """
 
-        self.path = f"{cache_name}.db"
+    def __init__(self, cache_name: str = ""):
+        self.path = f".lumoscache_{cache_name}.db"
 
         self.conn = sqlite3.connect(self.path)
         self.cursor = self.conn.cursor()
