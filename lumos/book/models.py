@@ -47,7 +47,7 @@ class Section(BaseModel):
     def end_page_gt_start_page(cls, v, info):
         if v is not None and info.data["start_page"] is not None:
             if v < info.data["start_page"]:
-                logger.error(
+                logger.warning(
                     f"End page {v} is less than or equal to start page {info.data['start_page']}"
                 )
                 return v

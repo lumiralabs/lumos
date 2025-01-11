@@ -2,7 +2,7 @@ from litellm import completion, acompletion, embedding, transcription
 import json
 from typing import Any, TypeVar
 from pydantic import BaseModel
-from lumos.utils import cache_middleware, async_cache_middleware
+from lumos.utils.cache import LumosCache
 import base64
 import structlog
 import magic
@@ -10,6 +10,9 @@ import magic
 logger = structlog.get_logger()
 
 T = TypeVar("T", bound=BaseModel)
+
+# Initialize cache for AI calls
+ai_cache = LumosCache("ai_calls")
 
 
 def _construct_chat_examples(
@@ -28,7 +31,7 @@ def _construct_chat_examples(
     return chat_messages
 
 
-@cache_middleware
+@ai_cache
 def call_ai(
     messages: list[dict[str, str]],
     response_format: type[T] | None = None,
@@ -99,7 +102,7 @@ def call_ai(
     return ret
 
 
-@async_cache_middleware
+@ai_cache
 async def call_ai_async(
     messages: list[dict[str, str]],
     response_format: type[T] | None = None,
