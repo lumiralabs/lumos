@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 T = TypeVar("T", bound=BaseModel)
 
 # Initialize cache for AI calls
-ai_cache = LumosCache("ai_calls")
+ai_cache = LumosCache("chat_and_embeddings")
 
 
 def _construct_chat_examples(
@@ -174,7 +174,9 @@ async def call_ai_async(
 
 
 @ai_cache
-def get_embedding(text: str | list[str], model: str = "text-embedding-3-small"):
+def get_embedding(
+    text: str | list[str], model: str = "text-embedding-3-small"
+) -> list[float] | list[list[float]]:
     if isinstance(text, str):
         _text = [text]
     else:
