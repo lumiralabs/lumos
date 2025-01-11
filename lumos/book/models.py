@@ -139,6 +139,7 @@ def _get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
             else:
                 content = "\n\n".join(element.text for element in section.elements)
 
+        content = content.replace("\u0000", "")  # sanitize the text - remove nulls
         section_dict = {
             "level": number if number else "",
             "title": section.title,

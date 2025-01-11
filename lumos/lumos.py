@@ -74,12 +74,12 @@ def call_ai(
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
-        assert (
-            messages[0]["role"] == "system"
-        ), "First message must be system message when using examples"
-        assert (
-            messages[1]["role"] == "user"
-        ), "Second message must be user message when using examples"
+        assert messages[0]["role"] == "system", (
+            "First message must be system message when using examples"
+        )
+        assert messages[1]["role"] == "user", (
+            "Second message must be user message when using examples"
+        )
         _messages = [messages[0]] + example_messages + [messages[1]]
     else:
         _messages = messages
@@ -145,12 +145,12 @@ async def call_ai_async(
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
         assert len(messages) <= 2, "Can only have up to 2 messages when using examples"
-        assert (
-            messages[0]["role"] == "system"
-        ), "First message must be system message when using examples"
-        assert (
-            messages[1]["role"] == "user"
-        ), "Second message must be user message when using examples"
+        assert messages[0]["role"] == "system", (
+            "First message must be system message when using examples"
+        )
+        assert messages[1]["role"] == "user", (
+            "Second message must be user message when using examples"
+        )
         _messages = [messages[0]] + example_messages + [messages[1]]
     else:
         _messages = messages
