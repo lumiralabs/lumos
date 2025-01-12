@@ -2,8 +2,11 @@ import asyncio
 import hashlib
 import json
 import sqlite3
+import structlog
 from functools import wraps
 from typing import Callable, Any
+
+logger = structlog.get_logger()
 
 
 def serialize_for_cache(obj: Any) -> str:
@@ -109,6 +112,7 @@ class LumosCache:
                 key = create_cache_key(func.__name__, args, kwargs)
                 cached_result = self.get(key)
                 if cached_result is not None:
+                    logger.info("cache_hit", function=func.__name__)
                     return deserialize_from_cache(
                         cached_result, kwargs.get("response_format")
                     )
@@ -131,6 +135,7 @@ class LumosCache:
                 key = create_cache_key(func.__name__, args, kwargs)
                 cached_result = self.get(key)
                 if cached_result is not None:
+                    logger.info("cache_hit", function=func.__name__)
                     return deserialize_from_cache(
                         cached_result, kwargs.get("response_format")
                     )
