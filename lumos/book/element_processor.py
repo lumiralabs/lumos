@@ -23,6 +23,17 @@ def get_elements_for_chapter(
     return ret
 
 
+def normalize_text(text: str) -> str:
+    return text.replace(" ", "").replace(".", "").strip().lower()
+
+
+def is_title_match(text: str, title: str) -> bool:
+    # If element starts with subsection title, it's definitely the start of this subsection
+    _text = normalize_text(text)
+    _title = normalize_text(title)
+    return _text.startswith(_title)
+
+
 def partition_section_elements(section: Section) -> Section:
     """
     Recursively partition elements into sections and their subsections based on section titles
@@ -61,10 +72,7 @@ def partition_section_elements(section: Section) -> Section:
 
             # Check if element is within subsection's page range
             if subsection.start_page <= page_number <= subsection.end_page:
-                # If element starts with subsection title, it's definitely the start of this subsection
-                _text = text.replace(" ", "").strip().lower()
-                _title = subsection.title.replace(" ", "").strip().lower()
-                if _text.startswith(_title):
+                if is_title_match(text, subsection.title):
                     current_subsection = subsection.title
                     logger.info(
                         f"Found subsection: {current_subsection} in {text=} on {page_number=}"

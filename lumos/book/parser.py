@@ -171,7 +171,7 @@ def cli(
 
     # Show requested view
     if type == "partitions":
-        partitions = book.flatten_partitions()
+        partitions = book.flatten_elements()
         if len(partitions) > 400:
             _paritions_to_view = partitions[:200] + partitions[-200:]
         else:
