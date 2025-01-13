@@ -88,16 +88,24 @@ class Book(BaseModel):
             elements.extend(section.flatten_elements())
         return elements
 
-    def flatten_chunks(self, dict=True):
+    def flatten_chunks(self):
         chunks = []
         for section in self.sections:
             chunks.extend(section.flatten_chunks())
 
-        if dict:
-            return chunks  # chunks are already converted to dict by Section.flatten_chunks()
-        return [
-            chunk if isinstance(chunk, dict) else chunk.to_dict() for chunk in chunks
+        # minimize info
+        chunks = [
+            {
+                "text": chunk["text"],
+                "metadata": {
+                    "page_number": chunk["metadata"]["page_number"],
+                    "filename": chunk["metadata"]["filename"],
+                    "filetype": chunk["metadata"]["filetype"],
+                },
+            }
+            for chunk in chunks
         ]
+        return chunks
 
     def toc(
         self, level: int | None = None, type: Literal["chapter", "toc", "all"] = "all"
@@ -139,7 +147,13 @@ def _get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
             else:
                 content = "\n\n".join(element.text for element in section.elements)
 
-        content = content.replace("\u0000", "")  # sanitize the text - remove nulls
+        if not len(content) > 0:
+            logger.error(f"No content found for section: {section.title}")
+
+        _sanitized_content = content.replace(
+            "\u0000", ""
+        )  # sanitize the text - remove nulls
+
         section_dict = {
             "level": number if number else "",
             "title": section.title,

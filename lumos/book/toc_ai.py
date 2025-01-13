@@ -327,7 +327,6 @@ def extract_toc(pdf_path: str) -> TOC:
     toc_list_adjusted = [
         [level, title, page + offset] for level, title, page in toc_list
     ]
-    breakpoint()
     sections = toc_list_to_toc_sections(toc_list_adjusted, total_pages)
     return TOC(sections=sections, total_pages=total_pages)
 

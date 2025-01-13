@@ -66,7 +66,7 @@ def _json_schema_to_pydantic_types(
     return field_types
 
 
-@app.post("/gen")
+@app.post("/generate")
 @require_api_key
 async def create_chat_completion(request: Request, ai_request: AIRequest):
     """
