@@ -153,6 +153,7 @@ def _get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
                 title=section.title,
                 level=section.level,
             )
+            return
 
         _sanitized_content = content.replace(
             "\u0000", ""

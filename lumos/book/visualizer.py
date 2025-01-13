@@ -22,7 +22,12 @@ def rich_view_chunks(chunks: list[dict | Any]) -> None:
             if "page_number" in _chunk["metadata"]
             else ""
         )
-        table.add_row(str(i), _chunk["type"], _chunk["text"], str(page_number))
+        table.add_row(
+            str(i),
+            _chunk.get("type", "<no type>"),
+            _chunk.get("text", "<no text>"),
+            str(page_number),
+        )
 
     console.print(table)
 

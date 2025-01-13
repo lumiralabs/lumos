@@ -186,3 +186,14 @@ def cli(
 
 if __name__ == "__main__":
     fire.Fire(cli)
+
+# if these , then logic is working
+
+# python -m lumos.book.toc test.pdf
+# python -m lumos.book.toc_ai detect test.pdf
+# python -m lumos.book.toc_ai extract test.pdf
+# python -m lumos.book.toc_ai offset test.pdf
+
+# python -m lumos.book.parser test.pdf partitions
+# python -m lumos.book.parser test.pdf sections
+# python -m lumos.book.parser test.pdf chunks
