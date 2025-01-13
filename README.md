@@ -36,7 +36,7 @@ lumos.call_ai(
 # Response(steps=['Multiply 100 by 100.', '100 * 100 = 10000.'], final_answer='10000')
 ```
 
-### 2. Embeddings
+### 2. Embeddings API
 ```python
 lumos.get_embedding("hello world")
 #[0.12, ..., ..., 0.34]
@@ -44,7 +44,7 @@ lumos.get_embedding("hello world")
 
 ### 3. Book Parser
 ```bash
-python -m lumos.book_parser parse "path/to/book.pdf"
+python -m lumos.book.parser path/to/book.pdf
 ```
 ```
 ```python
@@ -88,7 +88,7 @@ Table of Contents
 ## Deploy 
 We also expose lumos as a server authenticated by an API key.
 ```
-uv run uvicorn lumos.app:app
+uv run uvicorn lumos.server.app:app
 ```
 then curl:
 ```bash
