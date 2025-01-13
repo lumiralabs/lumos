@@ -12,7 +12,11 @@ from .toc import (
     toc_list_to_toc_sections,
 )
 from .toc_ai import extract_toc as extract_toc_ai, sanitize_toc_list
-from .element_processor import get_elements_for_chapter, partition_elements, add_chunks
+from .element_processor import (
+    get_elements_for_chapter,
+    partition_section_elements,
+    add_chunks,
+)
 from .visualizer import rich_view_chunks, rich_view_sections, rich_view_toc_sections
 from .pdf_utils import extract_pdf_metadata
 from .markdown_utils import get_section_text_map, convert_pdf_to_markdown
@@ -102,18 +106,16 @@ def from_pdf_path(pdf_path: str) -> Book:
     ]
 
     # Partition recursively into subsections
-    breakpoint()
     new_chapters = []
     for chapter in chapters:
+        # get all the elements for top-level chapter, seperate logic because easier with page boundaries
         chapter.elements = get_elements_for_chapter(book_elements, chapter)
-        breakpoint()
-        new_chapter = partition_elements(chapter)
+        # now recursively dive into chapter subsections and assign the elements
+        new_chapter = partition_section_elements(chapter)
         add_chunks(new_chapter)
         new_chapters.append(new_chapter)
 
-    breakpoint()
     book = Book(metadata=metadata, sections=new_chapters)
-    breakpoint()
     return book
 
 
@@ -169,7 +171,12 @@ def cli(
 
     # Show requested view
     if type == "partitions":
-        rich_view_chunks(book.flatten_elements())
+        partitions = book.flatten_partitions()
+        if len(partitions) > 400:
+            _paritions_to_view = partitions[:200] + partitions[-200:]
+        else:
+            _paritions_to_view = partitions
+        rich_view_chunks(_paritions_to_view)
     elif type == "sections":
         rich_view_sections(sections)
     elif type == "chunks":

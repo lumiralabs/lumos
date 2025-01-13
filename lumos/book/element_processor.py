@@ -2,6 +2,9 @@ import copy
 from typing import Any
 from unstructured.chunking.title import chunk_by_title
 from .models import Section
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 def get_elements_for_chapter(
@@ -20,7 +23,7 @@ def get_elements_for_chapter(
     return ret
 
 
-def partition_elements(section: Section) -> Section:
+def partition_section_elements(section: Section) -> Section:
     """
     Recursively partition elements into sections and their subsections based on section titles
     and page numbers. Elements are partitioned into the deepest matching subsection.
@@ -36,24 +39,44 @@ def partition_elements(section: Section) -> Section:
     partitions = {subsection.title: [] for subsection in new_section.subsections}
     unassigned_elements = []
 
-    # Track current section context
+    # Sort subsections by start page to handle overlapping ranges
+    sorted_subsections = sorted(
+        new_section.subsections, key=lambda x: x.start_page or float("inf")
+    )
+
+    # Track current subsection context
     current_subsection = None
+
     for element in elements:
         elem_dict = element.to_dict() if not isinstance(element, dict) else element
         page_number = elem_dict["metadata"]["page_number"]
+        text = elem_dict["text"]
 
-        # Find matching subsection based on page number and title
-        for subsection in new_section.subsections:
-            if (
-                elem_dict["text"].startswith(subsection.title)
-                and page_number == subsection.start_page
-            ):
-                current_subsection = subsection.title
-                break
+        # Find matching subsection based on page number
+        matched = False
+        for subsection in sorted_subsections:
+            # Skip if subsection has no page numbers
+            if subsection.start_page is None or subsection.end_page is None:
+                continue
 
-        if current_subsection:
-            partitions[current_subsection].append(element)
-        else:
+            # Check if element is within subsection's page range
+            if subsection.start_page <= page_number <= subsection.end_page:
+                # If element starts with subsection title, it's definitely the start of this subsection
+                _text = text.replace(" ", "").strip().lower()
+                _title = subsection.title.replace(" ", "").strip().lower()
+                if _text.startswith(_title):
+                    current_subsection = subsection.title
+                    logger.info(
+                        f"Found subsection: {current_subsection} in {text=} on {page_number=}"
+                    )
+
+                # If we have a current subsection and we're in its page range, assign to it
+                if current_subsection == subsection.title:
+                    partitions[current_subsection].append(element)
+                    matched = True
+                    break
+
+        if not matched:
             unassigned_elements.append(element)
 
     # Recursively partition each subsection's elements
@@ -61,12 +84,11 @@ def partition_elements(section: Section) -> Section:
         subsection = new_section.subsections[i]
         subsection.elements = partitions[subsection.title]
         if subsection.subsections:
-            new_section.subsections[i] = partition_elements(subsection)
+            new_section.subsections[i] = partition_section_elements(subsection)
 
-    breakpoint()
     # Assign unassigned elements to the main section
     new_section.elements = unassigned_elements
-    breakpoint()
+
     return new_section
 
 
