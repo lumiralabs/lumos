@@ -63,9 +63,10 @@ def partition_elements(section: Section) -> Section:
         if subsection.subsections:
             new_section.subsections[i] = partition_elements(subsection)
 
+    breakpoint()
     # Assign unassigned elements to the main section
     new_section.elements = unassigned_elements
-
+    breakpoint()
     return new_section
 
 

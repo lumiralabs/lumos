@@ -51,7 +51,7 @@ class LumosClient:
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                f"{self.base_url}/gen", headers=self.headers, json=payload
+                f"{self.base_url}/generate", headers=self.headers, json=payload
             )
             response.raise_for_status()
             data = response.json()

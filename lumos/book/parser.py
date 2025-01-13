@@ -102,14 +102,19 @@ def from_pdf_path(pdf_path: str) -> Book:
     ]
 
     # Partition recursively into subsections
+    breakpoint()
     new_chapters = []
     for chapter in chapters:
         chapter.elements = get_elements_for_chapter(book_elements, chapter)
+        breakpoint()
         new_chapter = partition_elements(chapter)
         add_chunks(new_chapter)
         new_chapters.append(new_chapter)
 
-    return Book(metadata=metadata, sections=new_chapters)
+    breakpoint()
+    book = Book(metadata=metadata, sections=new_chapters)
+    breakpoint()
+    return book
 
 
 def parse(pdf_path: str):
@@ -126,7 +131,7 @@ def parse(pdf_path: str):
     return sections, raw_chunks
 
 
-def dev(
+def cli(
     pdf_path: str,
     type: Literal["partitions", "sections", "chunks"] | None = None,
 ) -> None:
@@ -143,8 +148,8 @@ def dev(
         with open(book_pickle_path, "wb") as f:
             pickle.dump(book, f)
 
-    chunks = book.flatten_chunks(dict=True)
-    sections = book.flatten_sections(only_leaf=True)
+    chunks = book.flatten_chunks()
+    sections = book.flatten_sections(only_leaf=False)
 
     # Print statistics
     from rich.console import Console
@@ -172,4 +177,4 @@ def dev(
 
 
 if __name__ == "__main__":
-    fire.Fire(dev)
+    fire.Fire(cli)
