@@ -116,6 +116,7 @@ def from_pdf_path(pdf_path: str) -> Book:
         new_chapters.append(new_chapter)
 
     book = Book(metadata=metadata, sections=new_chapters)
+    rich_view_sections(book.flatten_sections(only_leaf=True))
     return book
 
 
@@ -129,7 +130,7 @@ def parse(pdf_path: str):
         book = from_pdf_path(pdf_path)
 
     sections = book.flatten_sections(only_leaf=True)
-    raw_chunks = book.flatten_chunks(dict=True)
+    raw_chunks = book.flatten_chunks()
     return sections, raw_chunks
 
 

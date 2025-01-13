@@ -4,7 +4,7 @@ from unstructured.chunking.title import chunk_by_title
 from .models import Section
 import structlog
 
-logger = structlog.get_logger(__name__)
+logger = structlog.get_logger()
 
 
 def get_elements_for_chapter(
@@ -75,7 +75,10 @@ def partition_section_elements(section: Section) -> Section:
                 if is_title_match(text, subsection.title):
                     current_subsection = subsection.title
                     logger.info(
-                        f"Found subsection: {current_subsection} in {text=} on {page_number=}"
+                        "Found subsection",
+                        current_subsection=current_subsection,
+                        text=text[:30] + "..." if len(text) > 30 else text,
+                        page_number=page_number,
                     )
 
                 # If we have a current subsection and we're in its page range, assign to it
