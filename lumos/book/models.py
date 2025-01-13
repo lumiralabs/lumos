@@ -148,7 +148,12 @@ def _get_sections_flat(book: Book, only_leaf: bool = False) -> list[dict]:
                 content = "\n\n".join(element.text for element in section.elements)
 
         if not len(content) > 0:
-            logger.error(f"No content found for section: {section.title}")
+            logger.error(
+                "No content found for section",
+                title=section.title,
+                level=section.level,
+            )
+            return
 
         _sanitized_content = content.replace(
             "\u0000", ""

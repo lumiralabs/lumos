@@ -116,6 +116,7 @@ def from_pdf_path(pdf_path: str) -> Book:
         new_chapters.append(new_chapter)
 
     book = Book(metadata=metadata, sections=new_chapters)
+    rich_view_sections(book.flatten_sections(only_leaf=True))
     return book
 
 
@@ -129,7 +130,7 @@ def parse(pdf_path: str):
         book = from_pdf_path(pdf_path)
 
     sections = book.flatten_sections(only_leaf=True)
-    raw_chunks = book.flatten_chunks(dict=True)
+    raw_chunks = book.flatten_chunks()
     return sections, raw_chunks
 
 
@@ -185,3 +186,14 @@ def cli(
 
 if __name__ == "__main__":
     fire.Fire(cli)
+
+# if these , then logic is working
+
+# python -m lumos.book.toc test.pdf
+# python -m lumos.book.toc_ai detect test.pdf
+# python -m lumos.book.toc_ai extract test.pdf
+# python -m lumos.book.toc_ai offset test.pdf
+
+# python -m lumos.book.parser test.pdf partitions
+# python -m lumos.book.parser test.pdf sections
+# python -m lumos.book.parser test.pdf chunks
