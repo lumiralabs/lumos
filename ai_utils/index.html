@@ -26,7 +26,7 @@
     
     
       
-        <title>Ai utils - Lumos</title>
+        <title>AI Utilities - Lumos</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#title-ai-utilities" class="md-skip">
+        <a href="#1-structured-outputs" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Ai utils
+              AI Utilities
             
           </span>
         </div>
@@ -260,7 +260,7 @@
           
   
   <span class="md-ellipsis">
-    Ai utils
+    AI Utilities
   </span>
   
 
@@ -271,7 +271,7 @@
         
   
   <span class="md-ellipsis">
-    Ai utils
+    AI Utilities
   </span>
   
 
@@ -291,9 +291,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#title-ai-utilities" class="md-nav__link">
+  <a href="#1-structured-outputs" class="md-nav__link">
     <span class="md-ellipsis">
-      title: AI Utilities
+      1. Structured Outputs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-embeddings-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Embeddings API
     </span>
   </a>
   
@@ -392,9 +401,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#title-ai-utilities" class="md-nav__link">
+  <a href="#1-structured-outputs" class="md-nav__link">
     <span class="md-ellipsis">
-      title: AI Utilities
+      1. Structured Outputs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-embeddings-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Embeddings API
     </span>
   </a>
   
@@ -418,16 +436,41 @@
   
 
 
-  <h1>Ai utils</h1>
+  <h1>AI Utilities</h1>
 
-<hr />
-<h2 id="title-ai-utilities">title: AI Utilities</h2>
+<h3 id="1-structured-outputs">1. Structured Outputs</h3>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> lumos
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Response</span>(BaseModel):
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    steps: <span style="color: #008000">list</span>[<span style="color: #008000">str</span>]
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    final_answer: <span style="color: #008000">str</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>lumos<span style="color: #666">.</span>call_ai(
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    messages<span style="color: #666">=</span>[
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;system&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;You are a mathematician.&quot;</span>},
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;What is 100 * 100?&quot;</span>},
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    ],
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    response_format<span style="color: #666">=</span>Response,
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    model<span style="color: #666">=</span><span style="color: #BA2121">&quot;gpt-4o-mini&quot;</span>,
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>)
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span style="color: #3D7B7B; font-style: italic"># Response(steps=[&#39;Multiply 100 by 100.&#39;, &#39;100 * 100 = 10000.&#39;], final_answer=&#39;10000&#39;)</span>
+</span></code></pre></div>
+<h3 id="2-embeddings-api">2. Embeddings API</h3>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>lumos<span style="color: #666">.</span>get_embedding(<span style="color: #BA2121">&quot;hello world&quot;</span>)
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #3D7B7B; font-style: italic">#[0.12, ..., ..., 0.34]</span>
+</span></code></pre></div>
 
 
 
 
 
 
+
+  
+  
 
 
 
@@ -451,7 +494,7 @@
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2025 - Arun Patro
+      Copyright &copy; 2025 - Lumira Labs
     </div>
   
   
