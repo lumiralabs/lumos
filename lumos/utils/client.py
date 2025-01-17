@@ -2,6 +2,7 @@ from typing import TypeVar
 from pydantic import BaseModel
 import httpx
 import structlog
+import os
 
 logger = structlog.get_logger(__name__)
 
@@ -17,6 +18,10 @@ class LumosClient:
 
         if not self.health_check():
             raise ConnectionError("Failed to connect to Lumos server")
+
+        if api_key != os.getenv("LUMOS_API_KEY"):
+            raise ValueError("Invalid API key")
+
         logger.info("Connected to Lumos server")
 
     async def call_ai_async(
