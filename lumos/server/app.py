@@ -13,7 +13,7 @@ import structlog
 logger = structlog.get_logger(__name__)
 app = FastAPI(title="Lumos API")
 
-LUMOS_API_KEY = "lumos-sk-12345678"
+LUMOS_API_KEY = os.getenv("LUMOS_API_KEY")
 
 
 def require_api_key(func: Callable):
