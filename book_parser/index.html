@@ -6,19 +6,19 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="AI Utilities for Lumeon">
+        <meta name="description" content="Useful utilities for AI">
       
       
         <meta name="author" content="Arun Patro">
       
       
-        <link rel="canonical" href="https://lumos.lumiralabs.com/book_parser/">
+        <link rel="canonical" href="https://lumiralabs.github.io/lumos/book_parser/">
       
       
-        <link rel="prev" href="../ai_utils/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../client/">
+        <link rel="next" href="../server_client/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -74,11 +74,6 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
-      
-        
-        <a href="#book-parser" class="md-skip">
-          Skip to content
-        </a>
       
     </div>
     <div data-md-component="announce">
@@ -246,26 +241,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../ai_utils/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    AI Utilities
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -275,19 +250,6 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Book Parser
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -299,85 +261,6 @@
 
       </a>
       
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Usage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#command-line-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      Command Line Interface
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#python-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Python API
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#output-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      Output Format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development-tools" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Tools
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -389,31 +272,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../client/" class="md-nav__link">
+      <a href="../server_client/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Client
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../server/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Server
+    Server and Client
   </span>
   
 
@@ -439,76 +302,6 @@
   
   
   
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Usage">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#command-line-interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      Command Line Interface
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#python-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Python API
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Features
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#output-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      Output Format
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#development-tools" class="md-nav__link">
-    <span class="md-ellipsis">
-      Development Tools
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -526,49 +319,45 @@
   
 
 
-<h1 id="book-parser">Book Parser</h1>
-<p>The book parser module provides functionality to parse PDF books and extract structured content including table of contents, sections, and text chunks.</p>
-<h2 id="usage">Usage</h2>
-<h3 id="command-line-interface">Command Line Interface</h3>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf
+  <h1>Book Parser</h1>
+
+<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf
 </span></code></pre></div>
-<h3 id="python-api">Python API</h3>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> book_parser
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #3D7B7B; font-style: italic"># Get table of contents with specified depth level</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>book_parser<span style="color: #666">.</span>toc(<span style="color: #BA2121">&quot;path/to/book.pdf&quot;</span>, level<span style="color: #666">=2</span>)
+<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>```python
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>from lumos import book_parser
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>book_parser.toc(&quot;path/to/book.pdf&quot;, level=2)
 </span></code></pre></div>
-<h2 id="features">Features</h2>
-<ol>
-<li><strong>Table of Contents Extraction</strong>: Automatically extracts hierarchical table of contents from PDFs</li>
-<li><strong>Section Parsing</strong>: Breaks down the book into logical sections based on the TOC</li>
-<li><strong>Smart Chunking</strong>: Creates meaningful text chunks for each section</li>
-<li><strong>Metadata Extraction</strong>: Extracts PDF metadata like title, author, etc.</li>
-<li><strong>Special Handling</strong>: </li>
-<li>Detects and handles two-column scientific papers differently</li>
-<li>Supports both PDF and Markdown inputs</li>
-<li>Sanitizes and normalizes extracted content</li>
-</ol>
-<h2 id="output-format">Output Format</h2>
-<p>The parser outputs a structured <code>Book</code> object containing:
-- PDF metadata (title, author, subject, keywords)
-- Hierarchical sections with:
-  - Title
-  - Page numbers
-  - Text elements
-  - Processed chunks
-  - Nested subsections</p>
-<h2 id="development-tools">Development Tools</h2>
-<p>For development and debugging, the CLI supports different view types:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #3D7B7B; font-style: italic"># View raw partitions</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>book.pdf<span style="color: #BBB"> </span>partitions
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #3D7B7B; font-style: italic"># View processed sections</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>book.pdf<span style="color: #BBB"> </span>sections
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #3D7B7B; font-style: italic"># View text chunks</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>book.pdf<span style="color: #BBB"> </span>chunks
-</span></code></pre></div>
+<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Table of Contents
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── Chapter 1. Introducing Asyncio (Pages: 1-8)
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│   ├── The Restaurant of ThreadBots (Pages: 1-5)
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│   ├── Epilogue (Pages: 6-5)
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│   └── What Problem Is Asyncio Trying to Solve? (Pages: 6-8)
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>├── Chapter 2. The Truth About Threads (Pages: 9-20)
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│   ├── Benefits of Threading (Pages: 10-10)
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│   ├── Drawbacks of Threading (Pages: 11-13)
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>│   └── Case Study: Robots and Cutlery (Pages: 14-20)
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>├── Chapter 3. Asyncio Walk-Through (Pages: 21-74)
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>│   ├── Quickstart (Pages: 22-27)
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>│   ├── The Tower of Asyncio (Pages: 28-30)
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>│   ├── Coroutines (Pages: 31-36)
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>│   ├── Event Loop (Pages: 37-38)
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>│   ├── Tasks and Futures (Pages: 39-45)
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>│   ├── Async Context Managers: async with (Pages: 46-49)
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>│   ├── Async Iterators: async for (Pages: 50-52)
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>│   ├── Simpler Code with Async Generators (Pages: 53-54)
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>│   ├── Async Comprehensions (Pages: 55-56)
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>│   └── Starting Up and Shutting Down (Gracefully!) (Pages: 57-74)
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>├── Chapter 4. 20 Asyncio Libraries You Aren’t Using (But…Oh, Never Mind) (Pages: 75-128)
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>│   ├── Streams (Standard Library) (Pages: 76-87)
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>│   ├── Twisted (Pages: 88-90)
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>│   ├── The Janus Queue (Pages: 91-91)
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>│   ├── aiohttp (Pages: 92-97)
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>│   ├── ØMQ (ZeroMQ) (Pages: 98-109)
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>│   ├── asyncpg and Sanic (Pages: 110-125)
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>│   └── Other Libraries and Resources (Pages: 126-128)
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>└── Chapter 5. Concluding Thoughts (Pages: 129-130)
+</span></code></pre></div></p>
 
 
 
