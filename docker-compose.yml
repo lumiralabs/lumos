@@ -5,9 +5,11 @@ services:
     build: .
     ports:
       - "10000:10000"
+    environment:
+      - LUMOS_API_KEY=${LUMOS_API_KEY}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3
-    restart: unless-stopped 
+    restart: unless-stopped
