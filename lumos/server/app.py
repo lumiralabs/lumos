@@ -1,8 +1,13 @@
 from fastapi import FastAPI, HTTPException, Request
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, create_model, HttpUrl
 from typing import Literal, Any, Callable
 import lumos
 from functools import wraps
+import tempfile
+import os
+import requests
+from fastapi import UploadFile, File
+from ..book.parser import from_pdf_path
 
 app = FastAPI(title="Lumos API")
 
@@ -38,6 +43,10 @@ class AIRequest(BaseModel):
 class EmbedRequest(BaseModel):
     inputs: str | list[str]
     model: str | None = "text-embedding-3-small"
+
+
+class PDFRequest(BaseModel):
+    url: HttpUrl | None = None
 
 
 def _json_schema_to_pydantic_types(
@@ -119,3 +128,47 @@ async def health_check(request: Request):
 @app.get("/")
 async def root(request: Request):
     return {"message": "Lumos API"}
+
+
+@app.post("/book/parse-pdf")
+@require_api_key
+async def process_pdf(
+    request: Request,
+    pdf_request: PDFRequest | None = None,
+    file: UploadFile | None = File(None),
+):
+    """Process a PDF file from either a URL or uploaded file."""
+    if not pdf_request and not file:
+        raise HTTPException(
+            status_code=400, detail="Either a PDF URL or file upload must be provided"
+        )
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            if pdf_request and pdf_request.url:
+                # Download from URL
+                response = requests.get(pdf_request.url)
+                response.raise_for_status()
+                tmp_file.write(response.content)
+            elif file:
+                # Handle uploaded file
+                content = await file.read()
+                tmp_file.write(content)
+
+            tmp_file.flush()
+
+            # Process the PDF
+            try:
+                book = from_pdf_path(tmp_file.name)
+                sections = book.flatten_sections(only_leaf=True)
+                raw_chunks = book.flatten_chunks()
+
+                return {"sections": sections, "chunks": raw_chunks}
+            finally:
+                # Clean up temp file
+                os.unlink(tmp_file.name)
+
+    except requests.RequestException as e:
+        raise HTTPException(status_code=400, detail=f"Failed to download PDF: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
