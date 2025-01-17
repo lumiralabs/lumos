@@ -104,4 +104,5 @@ class LumosClient:
                     timeout=30.0,
                 )
                 response.raise_for_status()
-                return response.json()
+                ret = response.json()
+                return ret["sections"], ret["chunks"]
