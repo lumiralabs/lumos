@@ -115,7 +115,8 @@ curl -X POST "http://localhost:8000/gen" \
 }'
 ```
 
-or use the python client:
+Use the python client to access lumos APIs remotely
+
 ```python
 from lumos import LumosClient
 

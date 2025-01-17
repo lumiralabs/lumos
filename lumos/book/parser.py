@@ -3,7 +3,7 @@ import pickle
 from typing import Literal
 import fire
 import fitz
-from unstructured.partition.auto import partition
+from unstructured.partition.pdf import partition_pdf
 from .models import Book, PDFMetadata
 from .toc import (
     sanitize_toc,
@@ -88,11 +88,11 @@ def from_pdf_path(pdf_path: str) -> Book:
 
     # Extract and process book elements
     logger.info("[book-parser] Extracting book elements", pdf_path=pdf_path)
-    book_elements = partition(
+    book_elements = partition_pdf(
         filename=pdf_path,
-        api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
-        partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
-        partition_by_api=True,
+        # api_key=os.environ.get("UNSTRUCTURED_API_KEY"),
+        # partition_endpoint=os.environ.get("UNSTRUCTURED_API_URL"),
+        # partition_by_api=True,
         strategy="fast",
         include_metadata=True,
     )

@@ -1,8 +1,14 @@
 from typing import TypeVar
 from pydantic import BaseModel
 import httpx
+from lumos.book import parser
 
 T = TypeVar("T", bound=BaseModel)
+
+
+class BookParser:
+    def parse(self, pdf_path: str):
+        return parser.parse(pdf_path)
 
 
 class LumosClient:
@@ -11,6 +17,7 @@ class LumosClient:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
+        self.book = BookParser()
 
     async def call_ai_async(
         self,
