@@ -1,7 +1,5 @@
 FROM quay.io/unstructured-io/unstructured:latest
 
-# Add poetry to PATH
-# ENV PATH=".local/bin:$PATH"
 ENV UNSTRUCTURED_API_URL="https://api.unstructuredapp.io/general/v0/general"
 ENV UNSTRUCTURED_API_KEY="5821gQyHOpVdAzXr92OsQOWSOJAsQ9"
 
