@@ -1,6 +1,9 @@
 from typing import TypeVar
 from pydantic import BaseModel
 import httpx
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -11,6 +14,10 @@ class LumosClient:
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.headers = {"X-API-Key": api_key}
+
+        if not self.health_check():
+            raise ConnectionError("Failed to connect to Lumos server")
+        logger.info("Connected to Lumos server")
 
     async def call_ai_async(
         self,
@@ -73,14 +80,11 @@ class LumosClient:
             response.raise_for_status()
             return response.json()
 
-    async def health_check(self) -> dict[str, str]:
+    def health_check(self) -> dict[str, str]:
         """Check if the Lumos server is healthy."""
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{self.base_url}/healthz", headers=self.headers
-            )
-            response.raise_for_status()
-            return response.json()
+        response = httpx.get(f"{self.base_url}/healthz", headers=self.headers)
+        response.raise_for_status()
+        return response.json()
 
     async def parse_book(self, pdf_path: str) -> dict:
         """Parse a PDF file and extract its sections and chunks."""

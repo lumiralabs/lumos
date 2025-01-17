@@ -13,6 +13,8 @@ import structlog
 logger = structlog.get_logger(__name__)
 app = FastAPI(title="Lumos API")
 
+LUMOS_API_KEY = "lumos-sk-12345678"
+
 
 def require_api_key(func: Callable):
     @wraps(func)
@@ -21,9 +23,7 @@ def require_api_key(func: Callable):
         api_key = request.headers.get("X-API-Key")
         if not api_key:
             raise HTTPException(status_code=401, detail="API key is missing")
-        if not api_key.strip():
-            raise HTTPException(status_code=401, detail="Invalid API key")
-        if api_key != "12345678":
+        if api_key != LUMOS_API_KEY:
             raise HTTPException(status_code=401, detail="Invalid API key")
         return await func(*args, **kwargs)
 
