@@ -72,7 +72,6 @@ kiwisolver==1.4.8
 langdetect==1.0.9
 layoutparser==0.3.4
 litellm==1.58.2
--e git+ssh://git@github.com/lumiralabs/lumos.git@d9a17378d7cea9488f8d564d41160319d750d7ab#egg=lumos
 lxml==5.3.0
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
