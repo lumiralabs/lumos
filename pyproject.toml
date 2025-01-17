@@ -20,11 +20,12 @@ dependencies = [
     "python-magic>=0.4.27",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "ipykernel>=6.29.5",
-    "pre-commit>=4.0.1", 
-    "pytest>=8.3.4"
+    "pre-commit>=4.0.1",
+    "pytest>=8.3.4",
+    "mkdocs-material>=9.5.49",
 ]
 
 [build-system]

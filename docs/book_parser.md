@@ -1,48 +1,8 @@
-# lumos
-Simple utils for building AI apps. Available as python API and a server.
-
-## Local Dev
-```
-uv sync --dev && uv pip install -e .
-```
-
-## Install
-```
-uv pip install git+https://github.com/lumiralabs/lumos
-```
+---
+title: Book Parser
+---
 
 
-## Python API
-
-### 1. Structured Outputs
-```python
-from lumos import lumos
-from pydantic import BaseModel
-
-
-class Response(BaseModel):
-    steps: list[str]
-    final_answer: str
-
-
-lumos.call_ai(
-    messages=[
-        {"role": "system", "content": "You are a mathematician."},
-        {"role": "user", "content": "What is 100 * 100?"},
-    ],
-    response_format=Response,
-    model="gpt-4o-mini",
-)
-# Response(steps=['Multiply 100 by 100.', '100 * 100 = 10000.'], final_answer='10000')
-```
-
-### 2. Embeddings API
-```python
-lumos.get_embedding("hello world")
-#[0.12, ..., ..., 0.34]
-```
-
-### 3. Book Parser
 ```bash
 python -m lumos.book.parser path/to/book.pdf
 ```
