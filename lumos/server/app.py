@@ -8,7 +8,9 @@ import os
 import requests
 from fastapi import UploadFile, File
 from ..book.parser import from_pdf_path
+import structlog
 
+logger = structlog.get_logger(__name__)
 app = FastAPI(title="Lumos API")
 
 
@@ -137,7 +139,13 @@ async def process_pdf(
     file: UploadFile | None = File(None),
 ):
     """Process a PDF file from either a URL or uploaded file."""
+    # Log request details
+    logger.info(
+        f"PDF processing request - PDF URL: {pdf_request.url if pdf_request else None}, File: {file.filename if file else None}"
+    )
+
     if not pdf_request and not file:
+        logger.error("No PDF URL or file provided")
         raise HTTPException(
             status_code=400, detail="Either a PDF URL or file upload must be provided"
         )
@@ -146,28 +154,58 @@ async def process_pdf(
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             if pdf_request and pdf_request.url:
                 # Download from URL
-                response = requests.get(pdf_request.url)
-                response.raise_for_status()
-                tmp_file.write(response.content)
+                logger.info(f"Downloading PDF from URL: {pdf_request.url}")
+                try:
+                    response = requests.get(pdf_request.url)
+                    response.raise_for_status()
+                    tmp_file.write(response.content)
+                except requests.RequestException as e:
+                    logger.error(
+                        f"Failed to download PDF from {pdf_request.url}: {str(e)}"
+                    )
+                    raise HTTPException(
+                        status_code=400, detail=f"Failed to download PDF: {str(e)}"
+                    )
             elif file:
                 # Handle uploaded file
-                content = await file.read()
-                tmp_file.write(content)
+                logger.info(f"Processing uploaded file: {file.filename}")
+                try:
+                    content = await file.read()
+                    tmp_file.write(content)
+                except Exception as e:
+                    logger.error(
+                        f"Failed to read uploaded file {file.filename}: {str(e)}"
+                    )
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Failed to read uploaded file: {str(e)}",
+                    )
 
             tmp_file.flush()
 
             # Process the PDF
             try:
+                logger.info(f"Processing PDF file: {tmp_file.name}")
                 book = from_pdf_path(tmp_file.name)
                 sections = book.flatten_sections(only_leaf=True)
                 raw_chunks = book.flatten_chunks()
 
+                logger.info(
+                    f"Successfully processed PDF with {len(sections)} sections and {len(raw_chunks)} chunks"
+                )
                 return {"sections": sections, "chunks": raw_chunks}
+            except Exception as e:
+                logger.error(f"Failed to process PDF content: {str(e)}")
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to process PDF content: {str(e)}"
+                )
             finally:
                 # Clean up temp file
+                logger.debug(f"Cleaning up temporary file: {tmp_file.name}")
                 os.unlink(tmp_file.name)
 
-    except requests.RequestException as e:
-        raise HTTPException(status_code=400, detail=f"Failed to download PDF: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to process PDF: {str(e)}")
+        logger.error(f"Unexpected error processing PDF: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error processing PDF: {str(e)}"
+        )

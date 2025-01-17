@@ -1,14 +1,8 @@
 from typing import TypeVar
 from pydantic import BaseModel
 import httpx
-from lumos.book import parser
 
 T = TypeVar("T", bound=BaseModel)
-
-
-class BookParser:
-    def parse(self, pdf_path: str):
-        return parser.parse(pdf_path)
 
 
 class LumosClient:
@@ -16,8 +10,7 @@ class LumosClient:
         """Initialize Lumos client with base URL and API key."""
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
-        self.headers = {"X-API-Key": api_key, "Content-Type": "application/json"}
-        self.book = BookParser()
+        self.headers = {"X-API-Key": api_key}
 
     async def call_ai_async(
         self,
@@ -88,3 +81,18 @@ class LumosClient:
             )
             response.raise_for_status()
             return response.json()
+
+    async def parse_book(self, pdf_path: str) -> dict:
+        """Parse a PDF file and extract its sections and chunks."""
+        async with httpx.AsyncClient() as client:
+            # Open file in binary mode and create files dict
+            with open(pdf_path, "rb") as f:
+                files = {"file": ("file.pdf", f, "application/pdf")}
+                response = await client.post(
+                    f"{self.base_url}/book/parse-pdf",
+                    headers=self.headers,
+                    files=files,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                return response.json()
