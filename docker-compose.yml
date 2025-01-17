@@ -4,12 +4,12 @@ services:
   web:
     build: .
     ports:
-      - "8000:8000"
+      - "10000:10000"
     environment:
       - UNSTRUCTURED_API_URL=${UNSTRUCTURED_API_URL:-https://api.unstructuredapp.io/general/v0/general}
       - UNSTRUCTURED_API_KEY=${UNSTRUCTURED_API_KEY}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:10000/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3

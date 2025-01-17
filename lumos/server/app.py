@@ -120,7 +120,6 @@ async def embed(request: Request, embed_request: EmbedRequest):
 
 
 @app.get("/healthz")
-@require_api_key
 async def health_check(request: Request):
     return {"status": "healthy"}
 
