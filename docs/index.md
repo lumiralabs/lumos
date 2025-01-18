@@ -1,14 +1,10 @@
 # lumos
 Simple utils for building AI apps. Available as python API and a server.
 
-## Local Dev
-```
-uv sync --dev && uv pip install -e .
-```
 
 ## Install
-```
-uv pip install git+https://github.com/lumiralabs/lumos
+```bash
+pip install git+https://github.com/lumiralabs/lumos
 ```
 
 
