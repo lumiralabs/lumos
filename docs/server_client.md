@@ -2,60 +2,42 @@
 title: Server and Client
 ---
 
-## Deploy 
-We also expose lumos as a server authenticated by an API key.
-```
-uv run uvicorn lumos.server.app:app
-```
-then curl:
+The entire Lumos API is also available as a server / client fashion to deploy and remotely call the API. 
+
+A seperate service can be useful isolation for
+
+1. Running compute heavy book parsing operations
+2. A centralised AI server for your org
+
+## Deploy (Server)
+Simply host the FastAPI server, authenticated by an API key:
 ```bash
-curl -X POST "http://localhost:8000/gen" \
--H "Content-Type: application/json" \
--H "X-API-Key: 12345678" \
--d '{
-  "messages": [
-    {"role": "system", "content": "You are a helpful assistant"},
-    {"role": "user", "content": "What is the capital of France?"}
-  ],
-  "response_schema": {
-    "type": "object",
-    "properties": {
-      "final_answer": {
-        "title": "Final Answer",
-        "type": "string"
-      }
-    },
-    "required": ["final_answer"],
-    "title": "Response"
-  },
-  "model": "gpt-4o-mini"
-}'
+LUMOS_API_KEY=12345678 
+uv run uvicorn lumos.server.app:app --host 0.0.0.0 --port 8000
 ```
 
-
-Use the python client to access lumos APIs remotely
+## Client SDK
+Once deployed, you can conveniently access the service with the LumosClient that mirrors the Python API. 
+First set the host and the api key.
 
 ```python
 from lumos import LumosClient
+from pydantic import BaseModel
 
-lumos = LumosClient("http://localhost:8000", "12345678")
+lumos = LumosClient(host="http://localhost:8000", api_key="12345678")
 
-await lumos.call_ai_async(
+class Response(BaseModel):
+    steps: list[str]
+    final_answer: str
+
+
+lumos.call_ai(
     messages=[
-        {"role": "system", "content": "You are a helpful assistant"},
-        {"role": "user", "content": "What is the capital of France?"}
+        {"role": "system", "content": "You are a mathematician."},
+        {"role": "user", "content": "What is 100 * 100?"},
     ],
-    response_schema={
-        "type": "object",
-        "properties": {
-            "final_answer": {
-                "title": "Final Answer",
-                "type": "string"
-            }
-        },
-        "required": ["final_answer"],
-        "title": "Response"
-    },
-    model="gpt-4o-mini"
+    response_format=Response,
+    model="gpt-4o-mini",
 )
+# Response(steps=['Multiply 100 by 100.', '100 * 100 = 10000.'], final_answer='10000')
 ```
