@@ -17,14 +17,19 @@ uv run uvicorn lumos.server.app:app --host 0.0.0.0 --port 8000
 ```
 
 ## Client SDK
-Once deployed, you can conveniently access the service with the LumosClient that mirrors the Python API. 
-First set the host and the api key.
-
+Once deployed, you can conveniently access the service with the `LumosClient` that fully mirrors the Python API.
+```python
+from lumos import lumos
+```
+can be safely replaced with 
 ```python
 from lumos import LumosClient
-from pydantic import BaseModel
-
 lumos = LumosClient(host="http://localhost:8000", api_key="12345678")
+```
+
+Now you can do similar operations like:
+```python
+from pydantic import BaseModel
 
 class Response(BaseModel):
     steps: list[str]
