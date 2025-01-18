@@ -273,15 +273,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#local-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      Local Dev
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       Install
@@ -380,6 +371,76 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="examples/asyncio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Asyncio (OReilly)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -405,15 +466,6 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#local-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      Local Dev
-    </span>
-  </a>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#install" class="md-nav__link">
@@ -485,75 +537,74 @@
 
 
 <h1 id="lumos">lumos</h1>
-<p>Simple utils for building AI apps. Available as python API and a server.</p>
-<h2 id="local-dev">Local Dev</h2>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv sync --dev &amp;&amp; uv pip install -e .
-</span></code></pre></div>
+<p>Simple utils for building AI apps. Available as Python API and deployable with server/client.</p>
 <h2 id="install">Install</h2>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv pip install git+https://github.com/lumiralabs/lumos
+<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>git+https://github.com/lumiralabs/lumos
 </span></code></pre></div>
 <h2 id="python-api">Python API</h2>
 <h3 id="1-structured-outputs">1. Structured Outputs</h3>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> lumos
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Response</span>(BaseModel):
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    steps: <span style="color: #008000">list</span>[<span style="color: #008000">str</span>]
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    final_answer: <span style="color: #008000">str</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>lumos<span style="color: #666">.</span>call_ai(
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    messages<span style="color: #666">=</span>[
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;system&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;You are a mathematician.&quot;</span>},
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;What is 100 * 100?&quot;</span>},
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    ],
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    response_format<span style="color: #666">=</span>Response,
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    model<span style="color: #666">=</span><span style="color: #BA2121">&quot;gpt-4o-mini&quot;</span>,
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>)
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #3D7B7B; font-style: italic"># Response(steps=[&#39;Multiply 100 by 100.&#39;, &#39;100 * 100 = 10000.&#39;], final_answer=&#39;10000&#39;)</span>
+<p>Easily generate validated pydantic objects.</p>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> lumos
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Response</span>(BaseModel):
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    steps: <span style="color: #008000">list</span>[<span style="color: #008000">str</span>]
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    final_answer: <span style="color: #008000">str</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>lumos<span style="color: #666">.</span>call_ai(
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    messages<span style="color: #666">=</span>[
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;system&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;You are a mathematician.&quot;</span>},
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        {<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: <span style="color: #BA2121">&quot;What is 100 * 100?&quot;</span>},
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    ],
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    response_format<span style="color: #666">=</span>Response,
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    model<span style="color: #666">=</span><span style="color: #BA2121">&quot;gpt-4o-mini&quot;</span>,
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>)
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span style="color: #3D7B7B; font-style: italic"># Response(steps=[&#39;Multiply 100 by 100.&#39;, &#39;100 * 100 = 10000.&#39;], final_answer=&#39;10000&#39;)</span>
 </span></code></pre></div>
 <h3 id="2-embeddings-api">2. Embeddings API</h3>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>lumos<span style="color: #666">.</span>get_embedding(<span style="color: #BA2121">&quot;hello world&quot;</span>)
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #3D7B7B; font-style: italic">#[0.12, ..., ..., 0.34]</span>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>lumos<span style="color: #666">.</span>get_embedding(<span style="color: #BA2121">&quot;hello world&quot;</span>)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #3D7B7B; font-style: italic">#[0.12, ..., ..., 0.34]</span>
 </span></code></pre></div>
 <h3 id="3-book-parser">3. Book Parser</h3>
-<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf
+<p>Lumos has useful book parsing utilities (with AI) to </p>
+<ul>
+<li>detect missing table of contents</li>
+<li>organize extracted text into sections</li>
+<li>chunk the data</li>
+</ul>
+<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.toc<span style="color: #BBB"> </span>path/to/book.pdf
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>```python
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>from lumos import book_parser
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>book_parser.toc(&quot;path/to/book.pdf&quot;, level=2)
-</span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Table of Contents
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├── Chapter 1. Introducing Asyncio (Pages: 1-8)
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>│   ├── The Restaurant of ThreadBots (Pages: 1-5)
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>│   ├── Epilogue (Pages: 6-5)
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>│   └── What Problem Is Asyncio Trying to Solve? (Pages: 6-8)
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>├── Chapter 2. The Truth About Threads (Pages: 9-20)
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>│   ├── Benefits of Threading (Pages: 10-10)
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>│   ├── Drawbacks of Threading (Pages: 11-13)
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>│   └── Case Study: Robots and Cutlery (Pages: 14-20)
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>├── Chapter 3. Asyncio Walk-Through (Pages: 21-74)
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>│   ├── Quickstart (Pages: 22-27)
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>│   ├── The Tower of Asyncio (Pages: 28-30)
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>│   ├── Coroutines (Pages: 31-36)
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>│   ├── Event Loop (Pages: 37-38)
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>│   ├── Tasks and Futures (Pages: 39-45)
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>│   ├── Async Context Managers: async with (Pages: 46-49)
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>│   ├── Async Iterators: async for (Pages: 50-52)
-</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>│   ├── Simpler Code with Async Generators (Pages: 53-54)
-</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>│   ├── Async Comprehensions (Pages: 55-56)
-</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>│   └── Starting Up and Shutting Down (Gracefully!) (Pages: 57-74)
-</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>├── Chapter 4. 20 Asyncio Libraries You Aren’t Using (But…Oh, Never Mind) (Pages: 75-128)
-</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>│   ├── Streams (Standard Library) (Pages: 76-87)
-</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>│   ├── Twisted (Pages: 88-90)
-</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>│   ├── The Janus Queue (Pages: 91-91)
-</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>│   ├── aiohttp (Pages: 92-97)
-</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>│   ├── ØMQ (ZeroMQ) (Pages: 98-109)
-</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>│   ├── asyncpg and Sanic (Pages: 110-125)
-</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>│   └── Other Libraries and Resources (Pages: 126-128)
-</span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>└── Chapter 5. Concluding Thoughts (Pages: 129-130)
+<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Table of Contents
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── Chapter 1. Introducing Asyncio (Pages: 1-8)
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>│   ├── The Restaurant of ThreadBots (Pages: 1-5)
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>│   ├── Epilogue (Pages: 6-5)
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>│   └── What Problem Is Asyncio Trying to Solve? (Pages: 6-8)
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>├── Chapter 2. The Truth About Threads (Pages: 9-20)
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>│   ├── Benefits of Threading (Pages: 10-10)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>│   ├── Drawbacks of Threading (Pages: 11-13)
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>│   └── Case Study: Robots and Cutlery (Pages: 14-20)
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>├── Chapter 3. Asyncio Walk-Through (Pages: 21-74)
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>│   ├── Quickstart (Pages: 22-27)
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>│   ├── The Tower of Asyncio (Pages: 28-30)
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>│   ├── Coroutines (Pages: 31-36)
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>│   ├── Event Loop (Pages: 37-38)
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>│   ├── Tasks and Futures (Pages: 39-45)
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>│   ├── Async Context Managers: async with (Pages: 46-49)
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>│   ├── Async Iterators: async for (Pages: 50-52)
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>│   ├── Simpler Code with Async Generators (Pages: 53-54)
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>│   ├── Async Comprehensions (Pages: 55-56)
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>│   └── Starting Up and Shutting Down (Gracefully!) (Pages: 57-74)
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>├── Chapter 4. 20 Asyncio Libraries You Aren’t Using (But…Oh, Never Mind) (Pages: 75-128)
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>│   ├── Streams (Standard Library) (Pages: 76-87)
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>│   ├── Twisted (Pages: 88-90)
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>│   ├── The Janus Queue (Pages: 91-91)
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>│   ├── aiohttp (Pages: 92-97)
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>│   ├── ØMQ (ZeroMQ) (Pages: 98-109)
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>│   ├── asyncpg and Sanic (Pages: 110-125)
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>│   └── Other Libraries and Resources (Pages: 126-128)
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>└── Chapter 5. Concluding Thoughts (Pages: 129-130)
 </span></code></pre></div></p>
 
 

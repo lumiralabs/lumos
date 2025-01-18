@@ -2,14 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://lumiralabs.github.io/lumos/</loc>
-         <lastmod>2025-01-17</lastmod>
+         <lastmod>2025-01-18</lastmod>
     </url>
     <url>
          <loc>https://lumiralabs.github.io/lumos/book_parser/</loc>
-         <lastmod>2025-01-17</lastmod>
+         <lastmod>2025-01-18</lastmod>
     </url>
     <url>
          <loc>https://lumiralabs.github.io/lumos/server_client/</loc>
-         <lastmod>2025-01-17</lastmod>
+         <lastmod>2025-01-18</lastmod>
+    </url>
+    <url>
+         <loc>https://lumiralabs.github.io/lumos/examples/asyncio/</loc>
+         <lastmod>2025-01-18</lastmod>
     </url>
 </urlset>

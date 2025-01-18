@@ -75,6 +75,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#1-table-of-contents" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -251,6 +256,17 @@
       
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Book Parser
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -260,6 +276,50 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-section-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Section Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Chunks
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -285,6 +345,76 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Examples
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/asyncio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Asyncio (OReilly)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -302,6 +432,41 @@
   
   
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Table of Contents
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-section-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Section Data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Chunks
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -321,12 +486,18 @@
 
   <h1>Book Parser</h1>
 
-<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf
+<p>The Book Parser extracts useful entities like:</p>
+<ol>
+<li>Table of Contents</li>
+<li>Section Data</li>
+<li>Chunks</li>
+</ol>
+<h2 id="1-table-of-contents">1. Table of Contents</h2>
+<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.toc<span style="color: #BBB"> </span>path/to/book.pdf
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>```python
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>from lumos import book_parser
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>book_parser.toc(&quot;path/to/book.pdf&quot;, level=2)
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> book_parser
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>book_parser<span style="color: #666">.</span>toc(<span style="color: #BA2121">&quot;path/to/book.pdf&quot;</span>, level<span style="color: #666">=2</span>)
 </span></code></pre></div>
 <div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Table of Contents
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── Chapter 1. Introducing Asyncio (Pages: 1-8)
@@ -358,6 +529,129 @@
 </span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>│   └── Other Libraries and Resources (Pages: 126-128)
 </span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>└── Chapter 5. Concluding Thoughts (Pages: 129-130)
 </span></code></pre></div></p>
+<h2 id="2-section-data">2. Section Data</h2>
+<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf<span style="color: #BBB"> </span>sections
+</span></code></pre></div>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> book_parser
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>sections <span style="color: #666">=</span> book_parser<span style="color: #666">.</span>section(<span style="color: #BA2121">&quot;path/to/book.pdf&quot;</span>)
+</span></code></pre></div></p>
+<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>                                                                  Document Sections                                                                   
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>┏━━━━┳━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>┃    ┃        ┃                                                                   ┃                                                                  ┃
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>┃ ID ┃ Level  ┃ Title                                                             ┃ Content                                                          ┃
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>┃    ┃        ┃                                                                   ┃                                                                  ┃
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>┡━━━━╇━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>│ 1  │ 1      │ Chapter 1. Introducing Asyncio                                    │ CHAPTER 1 Introducing Asyncio                                    │
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>│    │        │                                                                   │ My story is a lot like yours, only more interesting ’cause it    │
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>│    │        │                                                                   │ involves robots.                                                 │
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>│    │        │                                                                   │ —Bender, Futurama episode “30% Iron Chef ”                       │
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>│    │        │                                                                   │ The most common question I receive about Asyn...                 │
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>│ 2  │ 1.1    │ The Restaurant of ThreadBots                                      │ The Restaurant of ThreadBots The year is 2051, and you find      │
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>│    │        │                                                                   │ yourself in the restaurant business. Automation, largely by      │
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>│    │        │                                                                   │ robot workers, powers most of the economy, but it turns out that │
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>│    │        │                                                                   │ humans still en...                                               │
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>│ 3  │ 1.3    │ What Problem Is Asyncio Trying to Solve?                          │ What Problem Is Asyncio Trying to Solve? For I/O-bound           │
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>│    │        │                                                                   │ workloads, there are exactly (only!) two reasons to use          │
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>│    │        │                                                                   │ async-based concurrency over thread-based concurrency:           │
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>│    │        │                                                                   │ Asyncio offers a safer alternativ...                             │
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>│ 4  │ 2      │ Chapter 2. The Truth About Threads                                │ CHAPTER 2 The Truth About Threads                                │
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>│    │        │                                                                   │ Let’s be frank for a moment—you really don’t want to use Curio.  │
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>│    │        │                                                                   │ All things equal, you should probably be programming with        │
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>│    │        │                                                                   │ threads. Yes, threads. THOSE threads. Seri‐...                   │
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>│ 5  │ 2.1    │ Benefits of Threading                                             │ Benefits of Threading These are the main benefits of threading:  │
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>│    │        │                                                                   │ Ease of reading code                                             │
+</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>│    │        │                                                                   │                                                                  │
+</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>│    │        │                                                                   │ Your code can run concurrently, but still be set out in a very   │
+</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>│    │        │                                                                   │ simple, top-down linear sequence of commands to th...            │
+</span></code></pre></div>
+<h2 id="3-chunks">3. Chunks</h2>
+<p><div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>lumos.book.parser<span style="color: #BBB"> </span>path/to/book.pdf<span style="color: #BBB"> </span>chunks
+</span></code></pre></div>
+<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">lumos</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> book_parser
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>chunks <span style="color: #666">=</span> book_parser<span style="color: #666">.</span>chunks(<span style="color: #BA2121">&quot;path/to/book.pdf&quot;</span>)
+</span></code></pre></div></p>
+<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>                                                                   Document Chunks                                                                    
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>┏━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━┓
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>┃     ┃           ┃                                                                                                                           ┃      ┃
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>┃ #   ┃ Type      ┃ Text                                                                                                                      ┃ Page ┃
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>┃     ┃           ┃                                                                                                                           ┃      ┃
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>┡━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━┩
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>│ 1   │ &lt;no type&gt; │ CHAPTER 1 Introducing Asyncio                                                                                             │ 13   │
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>│     │           │ My story is a lot like yours, only more interesting ’cause it involves robots.                                            │      │
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>│     │           │ —Bender, Futurama episode “30% Iron Chef ”                                                                                │      │
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>│     │           │ The most common question I receive about Asyncio in Python 3 is this: “What is it, and what do I do with it?” The answer  │      │
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>│     │           │ you’ll hear most frequently is likely something about being able to execute multiple concurrent HTTP requests in a single │      │
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>│     │           │ program. But there is more to it than that—much more. Asyncio requires changing how you think about structuring programs. │      │
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>│     │           │ The following story provides a backdrop for gaining this understanding. The central focus of Asyncio is on how best to    │      │
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>│     │           │ best perform multiple tasks at the same time—and not just any tasks, but specifically tasks that involve waiting periods. │      │
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>│     │           │ The key insight required with this style of programming is that while you wait for this task to com‐ plete, work on other │      │
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>│     │           │ tasks can be performed.                                                                                                   │      │
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>│ 2   │ &lt;no type&gt; │ Epilogue In our story, each robot worker in the restaurant is a single thread. The key observa‐ tion in the story is that │ 18   │
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>│     │           │ the nature of the work in the restaurant involves a great deal of waiting, just as requests.get() is waiting for a        │      │
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>│     │           │ response from a server.                                                                                                   │      │
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>│     │           │ In a restaurant, the worker time spent waiting isn’t huge when slow humans are doing manual work, but when                │      │
+</span><span id="__span-8-29"><a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>│     │           │ super-efficient and quick robots are doing the work, nearly all their time is spent waiting. In computer programming, the │      │
+</span><span id="__span-8-30"><a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>│     │           │ same is true when net‐ work programming is involved. CPUs do work and wait on network I/O. CPUs in modern computers are   │      │
+</span><span id="__span-8-31"><a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>│     │           │ extremely fast—hundreds of thousands of times faster than network traffic. Thus, CPUs running networking programs spend a │      │
+</span><span id="__span-8-32"><a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>│     │           │ great deal of time waiting.                                                                                               │      │
+</span><span id="__span-8-33"><a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-34"><a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-35"><a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a>│ 3   │ &lt;no type&gt; │ The insight in the story is that programs can be written to explicitly direct the CPU to move between work tasks as       │ 18   │
+</span><span id="__span-8-36"><a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>│     │           │ necessary. Although there is an improvement in econ‐ omy (using fewer CPUs for the same work), the real advantage,        │      │
+</span><span id="__span-8-37"><a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>│     │           │ compared to a threading (multi-CPU) approach, is the elimination of race conditions.                                      │      │
+</span><span id="__span-8-38"><a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-39"><a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a>│     │           │ It’s not all roses, however: as we found in the story, there are benefits and drawbacks to most technology solutions. The │      │
+</span><span id="__span-8-40"><a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a>│     │           │ introduction of the LoopBot solved a certain class of problems but also introduced new problems—not the least of which is │      │
+</span><span id="__span-8-41"><a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a>│     │           │ that the res‐ taurant owner had to learn a slightly different way of programming.                                         │      │
+</span><span id="__span-8-42"><a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-43"><a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-44"><a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a>│ 4   │ &lt;no type&gt; │ The Restaurant of ThreadBots The year is 2051, and you find yourself in the restaurant business. Automation, largely by   │ 13   │
+</span><span id="__span-8-45"><a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a>│     │           │ robot workers, powers most of the economy, but it turns out that humans still enjoy going out to eat once in a while. In  │      │
+</span><span id="__span-8-46"><a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>│     │           │ your restaurant, all the employees are robots—humanoid, of course, but unmistakably robots. The most successful manu‐     │      │
+</span><span id="__span-8-47"><a id="__codelineno-8-47" name="__codelineno-8-47" href="#__codelineno-8-47"></a>│     │           │ facturer of robots is Threading Inc., and robot workers from this company have come to be called “ThreadBots.”            │      │
+</span><span id="__span-8-48"><a id="__codelineno-8-48" name="__codelineno-8-48" href="#__codelineno-8-48"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-49"><a id="__codelineno-8-49" name="__codelineno-8-49" href="#__codelineno-8-49"></a>│     │           │ Except for this small robotic detail, your restaurant looks and operates like one of those old-time establishments from,  │      │
+</span><span id="__span-8-50"><a id="__codelineno-8-50" name="__codelineno-8-50" href="#__codelineno-8-50"></a>│     │           │ say, 2020. Your guests will be looking for that vintage experience. They want fresh food prepared from scratch. They want │      │
+</span><span id="__span-8-51"><a id="__codelineno-8-51" name="__codelineno-8-51" href="#__codelineno-8-51"></a>│     │           │ to sit at tables. They want to wait for their meals—but only a little. They want to pay at the end, and they sometimes    │      │
+</span><span id="__span-8-52"><a id="__codelineno-8-52" name="__codelineno-8-52" href="#__codelineno-8-52"></a>│     │           │ even want to leave a tip, for old times’ sake.                                                                            │      │
+</span><span id="__span-8-53"><a id="__codelineno-8-53" name="__codelineno-8-53" href="#__codelineno-8-53"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-54"><a id="__codelineno-8-54" name="__codelineno-8-54" href="#__codelineno-8-54"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-55"><a id="__codelineno-8-55" name="__codelineno-8-55" href="#__codelineno-8-55"></a>│ 5   │ &lt;no type&gt; │ Being new to the robotic restaurant business, you do what every other restaurateur does and hire a small fleet of robots: │ 14   │
+</span><span id="__span-8-56"><a id="__codelineno-8-56" name="__codelineno-8-56" href="#__codelineno-8-56"></a>│     │           │ one to greet diners at the front desk (GreetBot), one to wait tables and take orders (WaitBot), one to do the cooking     │      │
+</span><span id="__span-8-57"><a id="__codelineno-8-57" name="__codelineno-8-57" href="#__codelineno-8-57"></a>│     │           │ (ChefBot), and one to manage the bar (WineBot).                                                                           │      │
+</span><span id="__span-8-58"><a id="__codelineno-8-58" name="__codelineno-8-58" href="#__codelineno-8-58"></a>│     │           │                                                                                                                           │      │
+</span><span id="__span-8-59"><a id="__codelineno-8-59" name="__codelineno-8-59" href="#__codelineno-8-59"></a>│     │           │ Hungry diners arrive at the front desk and are welcomed by GreetBot, your front-of- house ThreadBot. They are then        │      │
+</span><span id="__span-8-60"><a id="__codelineno-8-60" name="__codelineno-8-60" href="#__codelineno-8-60"></a>│     │           │ directed to a table, and once they are seated, WaitBot takes their order. Then WaitBot brings that order to the kitchen   │      │
+</span><span id="__span-8-61"><a id="__codelineno-8-61" name="__codelineno-8-61" href="#__codelineno-8-61"></a>│     │           │ on a slip of paper (because you want to preserve that old-time experience, remember?). ChefBot looks at the order on the  │      │
+</span><span id="__span-8-62"><a id="__codelineno-8-62" name="__codelineno-8-62" href="#__codelineno-8-62"></a>│     │           │ slip and begins preparing the food. WaitBot will periodically check whether the food is ready, and when it is, will       │      │
+</span><span id="__span-8-63"><a id="__codelineno-8-63" name="__codelineno-8-63" href="#__codelineno-8-63"></a>│     │           │ immediately take the dishes to the cus‐ tomers’ table. When the guests are ready to leave, they return to GreetBot, who   │      │
+</span><span id="__span-8-64"><a id="__codelineno-8-64" name="__codelineno-8-64" href="#__codelineno-8-64"></a>│     │           │ calcu‐ lates the bill, takes their payment, and graciously wishes them a pleasant evening.                                │      │
+</span></code></pre></div>
 
 
 
