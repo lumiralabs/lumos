@@ -23,6 +23,10 @@ from .pdf_utils import extract_pdf_metadata
 from .markdown_utils import get_section_text_map, convert_pdf_to_markdown
 from .doc_type import is_two_column_scientific_paper
 import structlog
+import json
+from glob import glob
+from rich.console import Console
+from rich.table import Table
 
 logger = structlog.get_logger()
 
@@ -121,41 +125,69 @@ def from_pdf_path(pdf_path: str) -> Book:
     return book
 
 
-
 def parse_non_pdf(file_path: str):
-    """Parse a non-PDF file and return sections and chunks in the same format as parse_book."""
-    # Get elements using unstructured's auto partition
-    elements = partition(file_path)
+    """Parse a non-PDF file using unstructured partition and return sections and chunks."""
+    logger.info("Processing file:", file_path=file_path)
     
-    # Create a basic metadata object
-    metadata = PDFMetadata(
-        title=os.path.basename(file_path),
-        author="Unknown",
-        subject=None,
-        keywords=None,
-        path=file_path,
-        toc=None,
-    )
-    
-    # Create a single section containing all elements
-    section = Section(
-        level="1",
-        title=os.path.basename(file_path),
-        start_page=1,
-        end_page=1,
-        elements=elements,
-    )
-    
-    # Add chunks to the section
-    add_chunks(section)
-    
-    # Create book object
-    book = Book(metadata=metadata, sections=[section])
-    
-    # Return flattened sections and chunks
-    sections = book.flatten_sections(only_leaf=False)
-    raw_chunks = book.flatten_chunks()
-    return sections, raw_chunks
+    try:
+        # Create temp output directory for JSON
+        temp_base_dir = os.path.join(os.getcwd(), "temp_processing")
+        output_dir = os.path.join(temp_base_dir, "output")
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Get elements using unstructured's auto partition
+        elements = partition(
+            file_path,
+            strategy="auto",
+            include_metadata=True,
+        )
+
+        # Convert elements to chunks format matching pipeline output
+        chunks = []
+        for element in elements:
+            element_dict = element.to_dict()
+            if element_dict.get("text", "").strip():
+                clean_chunk = {
+                    "text": element_dict.get("text", "").strip(),
+                    "type": element_dict.get("type", ""),
+                    "metadata": {
+                        "filename": os.path.basename(file_path),
+                        "filetype": os.path.splitext(file_path)[1][1:],
+                        "page_number": element_dict.get("metadata", {}).get("page_number"),
+                        "languages": element_dict.get("metadata", {}).get("languages", []),
+                    },
+                }
+                chunks.append(clean_chunk)
+
+        # Save chunks to JSON for consistency with pipeline approach
+        output_json = os.path.join(output_dir, f"{os.path.basename(file_path)}.json")
+        with open(output_json, "w", encoding="utf-8") as f:
+            json.dump(chunks, f, ensure_ascii=False, indent=2)
+
+        # Print chunks in rich markdown table format for debugging
+        console = Console()
+        table = Table(title="Extracted Chunks", padding=1)
+        table.add_column("Chunk #", justify="right", style="cyan")
+        table.add_column("Text", style="green", no_wrap=False)
+        
+        for i, chunk in enumerate(chunks, 1):
+            table.add_row(
+                str(i),
+                chunk.get("text", "")
+            )
+        console.print(table)
+
+        # Create sections from chunks
+        sections = [{
+            "content": chunk["text"],
+            "metadata": chunk["metadata"]
+        } for chunk in chunks]
+
+        return sections, chunks
+
+    except Exception as e:
+        logger.error(f"Failed to process file content: {str(e)}", exc_info=True)
+        raise
 
 
 def parse(pdf_path: str):
@@ -193,9 +225,6 @@ def cli(
     sections = book.flatten_sections(only_leaf=False)
 
     # Print statistics
-    from rich.console import Console
-    from rich.table import Table
-
     console = Console()
     table = Table(title="Book Statistics", padding=1)
     table.add_column("Type", style="cyan")
