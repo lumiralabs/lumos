@@ -10,6 +10,8 @@ lumos/dev/*
 _experimental/
 *.json
 *.pdf
+*.env
+.env
 
 *out.txt
 output_folder/

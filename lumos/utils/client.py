@@ -106,3 +106,47 @@ class LumosClient:
                 response.raise_for_status()
                 ret = response.json()
                 return ret["sections"], ret["chunks"]
+
+    async def parse_file(self, file_path: str) -> dict:
+        """Parse a non-PDF file and extract its sections and chunks.
+        
+        Args:
+            file_path: Path to the file to parse. Supported formats:
+                - .txt (text/plain)
+                - .md (text/markdown)
+                - .html/.htm (text/html) 
+                - .docx (application/vnd.openxmlformats-officedocument.wordprocessingml.document)
+                - .doc (application/msword)
+                - .rtf (application/rtf)
+        
+        Returns:
+            A tuple of (sections, chunks) where:
+                - sections: List of section objects with metadata
+                - chunks: List of content chunks with metadata
+        """
+        async with httpx.AsyncClient() as client:
+            # Open file in binary mode and create files dict
+            with open(file_path, "rb") as f:
+                # Get the correct MIME type based on file extension
+                file_ext = os.path.splitext(file_path)[1].lower()
+                mime_types = {
+                    '.txt': 'text/plain',
+                    '.md': 'text/markdown',
+                    '.html': 'text/html',
+                    '.htm': 'text/html',
+                    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    '.doc': 'application/msword',
+                    '.rtf': 'application/rtf',
+                }
+                mime_type = mime_types.get(file_ext, 'application/octet-stream')
+                
+                files = {"file": (os.path.basename(file_path), f, mime_type)}
+                response = await client.post(
+                    f"{self.base_url}/book/parse-file",
+                    headers=self.headers,
+                    files=files,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                ret = response.json()
+                return ret["sections"], ret["chunks"]

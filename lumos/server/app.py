@@ -7,7 +7,7 @@ import tempfile
 import os
 import requests
 from fastapi import UploadFile, File
-from ..book.parser import from_pdf_path
+from ..book.parser import from_pdf_path, parse_non_pdf
 import structlog
 
 logger = structlog.get_logger(__name__)
@@ -208,4 +208,53 @@ async def process_pdf(
         logger.error(f"Unexpected error processing PDF: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Unexpected error processing PDF: {str(e)}"
+        )
+
+
+@app.post("/book/parse-file")
+@require_api_key
+async def process_file(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    """Process a non-PDF file."""
+    logger.info(f"Processing file: {file.filename}")
+
+    try:
+        # Create a temporary file with the original extension
+        file_ext = os.path.splitext(file.filename)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=file_ext) as tmp_file:
+            try:
+                content = await file.read()
+                tmp_file.write(content)
+                tmp_file.flush()
+            except Exception as e:
+                logger.error(f"Failed to read uploaded file {file.filename}: {str(e)}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Failed to read uploaded file: {str(e)}",
+                )
+
+            try:
+                logger.info(f"Processing file: {tmp_file.name}")
+                sections, raw_chunks = parse_non_pdf(tmp_file.name)
+
+                logger.info(
+                    f"Successfully processed file with {len(sections)} sections and {len(raw_chunks)} chunks"
+                )
+                return {"sections": sections, "chunks": raw_chunks}
+            except Exception as e:
+                logger.error(f"Failed to process file content: {str(e)}")
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to process file content: {str(e)}"
+                )
+            finally:
+                # Clean up temp file
+                logger.debug(f"Cleaning up temporary file: {tmp_file.name}")
+                os.unlink(tmp_file.name)
+
+    except Exception as e:
+        logger.error(f"Unexpected error processing file: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Unexpected error processing file: {str(e)}"
         )
