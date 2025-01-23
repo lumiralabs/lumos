@@ -187,7 +187,7 @@ async def process_pdf(
             try:
                 logger.info(f"Processing PDF file: {tmp_file.name}")
                 book = from_pdf_path(tmp_file.name)
-                sections = book.flatten_sections(only_leaf=True)
+                sections = book.flatten_sections(only_leaf=False)
                 raw_chunks = book.flatten_chunks()
 
                 logger.info(
