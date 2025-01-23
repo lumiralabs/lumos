@@ -212,7 +212,7 @@ async def process_pdf(
 
 
 @app.post("/book/parse-file")
-# @require_api_key
+@require_api_key
 async def process_file(
     request: Request,
     file: UploadFile = File(...),
