@@ -4,7 +4,8 @@ from typing import Literal
 import fire
 import fitz
 from unstructured.partition.pdf import partition_pdf
-from .models import Book, PDFMetadata
+from unstructured.partition.auto import partition       
+from .models import Book, PDFMetadata, Section
 from .toc import (
     sanitize_toc,
     extract_toc,
@@ -118,6 +119,43 @@ def from_pdf_path(pdf_path: str) -> Book:
     book = Book(metadata=metadata, sections=new_chapters)
     rich_view_sections(book.flatten_sections(only_leaf=False))
     return book
+
+
+
+def parse_non_pdf(file_path: str):
+    """Parse a non-PDF file and return sections and chunks in the same format as parse_book."""
+    # Get elements using unstructured's auto partition
+    elements = partition(file_path)
+    
+    # Create a basic metadata object
+    metadata = PDFMetadata(
+        title=os.path.basename(file_path),
+        author="Unknown",
+        subject=None,
+        keywords=None,
+        path=file_path,
+        toc=None,
+    )
+    
+    # Create a single section containing all elements
+    section = Section(
+        level="1",
+        title=os.path.basename(file_path),
+        start_page=1,
+        end_page=1,
+        elements=elements,
+    )
+    
+    # Add chunks to the section
+    add_chunks(section)
+    
+    # Create book object
+    book = Book(metadata=metadata, sections=[section])
+    
+    # Return flattened sections and chunks
+    sections = book.flatten_sections(only_leaf=False)
+    raw_chunks = book.flatten_chunks()
+    return sections, raw_chunks
 
 
 def parse(pdf_path: str):
