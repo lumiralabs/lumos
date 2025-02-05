@@ -11,6 +11,11 @@ uv sync --dev && uv pip install -e .
 uv pip install git+https://github.com/lumiralabs/lumos
 ```
 
+## Start Server
+```
+docker-compose up
+```
+
 
 ## Python API
 
