@@ -1,0 +1,53 @@
+# Site information
+site_name: Lumos
+site_author: Arun Patro
+site_url: https://lumiralabs.github.io/lumos
+site_description: Useful utilities for AI
+
+# Repository
+repo_name: lumiralabs/lumos
+repo_url: https://github.com/lumiralabs/lumos
+
+# Copyright
+copyright: Copyright &copy; 2025 - Lumira Labs
+
+# Configuration
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Inter
+    code: Source Code Pro
+  palette:
+    # scheme: slate
+    primary: 'black'
+    accent: 'indigo'
+  features:
+    - content.code.copy
+    - navigation.expand
+    # - navigation.tabs
+    - navigation.sections
+    # - header.autohide
+    - announce.dismiss
+
+# Extensions
+markdown_extensions:
+  # - admonition
+  - def_list
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      noclasses: True
+      pygments_style: default
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

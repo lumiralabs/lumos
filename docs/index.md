@@ -1,25 +1,18 @@
 # lumos
-Simple utils for building AI apps. Available as python API and a server.
+Simple utils for building AI apps. Available as Python API and deployable with server/client.
 
-## Local Dev
-```
-uv sync --dev && uv pip install -e .
-```
 
 ## Install
-```
-uv pip install git+https://github.com/lumiralabs/lumos
-```
-
-## Start Server
-```
-docker-compose up
+```bash
+pip install git+https://github.com/lumiralabs/lumos
 ```
 
 
 ## Python API
 
 ### 1. Structured Outputs
+Easily generate validated pydantic objects.
+
 ```python
 from lumos import lumos
 from pydantic import BaseModel
@@ -48,14 +41,14 @@ lumos.get_embedding("hello world")
 ```
 
 ### 3. Book Parser
-```bash
-python -m lumos.book.parser path/to/book.pdf
-```
-```
-```python
-from lumos import book_parser
+Lumos has useful book parsing utilities (with AI) to 
 
-book_parser.toc("path/to/book.pdf", level=2)
+- detect missing table of contents
+- organize extracted text into sections
+- chunk the data
+
+```bash
+python -m lumos.book.toc path/to/book.pdf
 ```
 ```
 Table of Contents
@@ -88,5 +81,3 @@ Table of Contents
 │   └── Other Libraries and Resources (Pages: 126-128)
 └── Chapter 5. Concluding Thoughts (Pages: 129-130)
 ```
-
-
