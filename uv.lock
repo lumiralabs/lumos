@@ -1027,6 +1027,13 @@ dev = [
     { name = "pytest" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "ipykernel" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.6" },
@@ -1042,6 +1049,13 @@ requires-dist = [
     { name = "structlog", specifier = ">=25.1.0" },
     { name = "unstructured", extras = ["pdf"], specifier = ">=0.16.13" },
     { name = "uvicorn", specifier = ">=0.34.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "pre-commit", specifier = ">=4.0.1" },
+    { name = "pytest", specifier = ">=8.3.4" },
 ]
 
 [[package]]

@@ -84,6 +84,7 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
     """Extract main chapters from sections using pattern matching first, then AI if needed."""
     chapters = extract_chapters_by_pattern(sections)
     if not chapters:
+        logger.info("no_chapters_found_by_pattern, using_ai")
         chapters = extract_chapters_ai(sections)
     return chapters
 
