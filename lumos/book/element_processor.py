@@ -24,7 +24,7 @@ def get_elements_for_chapter(
 
 
 def normalize_text(text: str) -> str:
-    return text.replace(" ", "").replace(".", "").strip().lower()
+    return text.replace(" ", "").replace(".", "").replace("\t", "").strip().lower()
 
 
 def is_title_match(text: str, title: str) -> bool:
