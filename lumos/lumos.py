@@ -24,9 +24,11 @@ def _construct_chat_examples(
     """
     chat_messages: list[dict[str, str]] = []
     for query, response in examples:
-        chat_messages.append({"role": "user", "content": query})
-        chat_messages.append(
-            {"role": "assistant", "content": response.model_dump_json()}
+        chat_messages.extend(
+            [
+                {"role": "user", "content": query},
+                {"role": "assistant", "content": response.model_dump_json()},
+            ]
         )
     return chat_messages
 
