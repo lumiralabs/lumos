@@ -21,7 +21,7 @@ docker-compose up
 
 ### 1. Structured Outputs
 ```python
-from lumos import lumos
+import lumos
 from pydantic import BaseModel
 
 

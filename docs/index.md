@@ -4,7 +4,7 @@ Simple utils for building AI apps. Available as Python API and deployable with s
 
 ## Install
 ```bash
-pip install git+https://github.com/lumiralabs/lumos
+pip install lumira-lumos
 ```
 
 
@@ -14,7 +14,7 @@ pip install git+https://github.com/lumiralabs/lumos
 Easily generate validated pydantic objects.
 
 ```python
-from lumos import lumos
+import lumos
 from pydantic import BaseModel
 
 
