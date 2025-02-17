@@ -1,12 +1,12 @@
 [project]
 name = "lumira-lumos"
-version = "0.0.2"
+version = "0.0.3"
 description = ""
 authors = [
     {name = "Arun Patro",email = "arun@lumiralabs.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11"
 dependencies = [
     "fire>=0.7.0",
     "pydantic>=2.10.5",
@@ -40,5 +40,6 @@ packages = ["lumos"]
 dev = [
     "ipykernel>=6.29.5",
     "pre-commit>=4.0.1",
+    "pydantic-ai>=0.0.24",
     "pytest>=8.3.4",
 ]

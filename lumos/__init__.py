@@ -6,6 +6,7 @@ from lumos.lumos import (
     describe_image,
 )
 from lumos.utils.client import LumosClient
+from lumos import lumos
 
 __all__ = [
     "call_ai",
@@ -14,4 +15,5 @@ __all__ = [
     "transcribe",
     "describe_image",
     "LumosClient",
+    "lumos",
 ]

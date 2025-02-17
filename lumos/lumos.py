@@ -6,6 +6,7 @@ from lumos.utils.cache import LumosCache
 import base64
 import structlog
 import magic
+from lumos.utils.schema_utils import validate_model_types
 
 logger = structlog.get_logger()
 
@@ -75,6 +76,11 @@ def call_ai(
         response = call_ai(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
     """
+
+    # Validate response_format
+    if response_format:
+        validate_model_types(response_format)
+
     # Prepare messages with examples if provided
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
@@ -94,7 +100,7 @@ def call_ai(
         model=model, messages=_messages, response_format=response_format
     )
     cost = response._hidden_params["response_cost"]
-    logger.info("ai_cost", cost=cost)
+    logger.info("ai_cost", cost=cost, model=model)
     ret = response.choices[0]["message"]["content"]
     if response_format:
         ret_dict = json.loads(ret)
@@ -146,6 +152,11 @@ async def call_ai_async(
         response = await call_ai_async(messages, MathResponse, examples=add_examples)
         # MathResponse(answer=6, explanation="3 plus 3 equals 6")
     """
+
+    # Validate response_format
+    if response_format:
+        validate_model_types(response_format)
+
     # Prepare messages with examples if provided
     if examples:
         example_messages = _construct_chat_examples(examples, response_format)
@@ -165,7 +176,7 @@ async def call_ai_async(
         model=model, messages=_messages, response_format=response_format
     )
     cost = response._hidden_params["response_cost"]
-    logger.info("ai_cost", cost=cost)
+    logger.info("ai_cost", cost=cost, model=model)
     ret = response.choices[0]["message"]["content"]
     if response_format:
         ret_dict = json.loads(ret)

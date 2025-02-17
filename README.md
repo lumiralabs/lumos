@@ -8,7 +8,7 @@ uv sync --dev && uv pip install -e .
 
 ## Install
 ```
-uv pip install git+https://github.com/lumiralabs/lumos
+pip install lumira-lumos
 ```
 
 ## Start Server
@@ -50,7 +50,6 @@ lumos.get_embedding("hello world")
 ### 3. Book Parser
 ```bash
 python -m lumos.book.parser path/to/book.pdf
-```
 ```
 ```python
 from lumos import book_parser
