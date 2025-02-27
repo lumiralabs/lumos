@@ -3,7 +3,7 @@ Simple utils for building AI apps. Available as python API and a server.
 
 ## Local Dev
 ```
-uv sync --dev && uv pip install -e .
+uv sync --all-groups && uv pip install -e .
 ```
 
 ## Install
