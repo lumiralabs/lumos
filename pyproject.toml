@@ -1,9 +1,9 @@
 [project]
 name = "lumira-lumos"
-version = "0.0.3"
+version = "0.0.4"
 description = ""
 authors = [
-    {name = "Arun Patro",email = "arun@lumiralabs.com"}
+    {name = "Arun Patro", email = "arun@lumiralabs.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
@@ -36,10 +36,15 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["lumos"]
 
+
 [dependency-groups]
 dev = [
     "ipykernel>=6.29.5",
     "pre-commit>=4.0.1",
     "pydantic-ai>=0.0.24",
     "pytest>=8.3.4",
+]
+book = [
+    "pymupdf>=1.25.1",
+    "unstructured[pdf]>=0.16.13"
 ]

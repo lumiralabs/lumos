@@ -1398,6 +1398,10 @@ dev = [
 ]
 
 [package.dev-dependencies]
+book = [
+    { name = "pymupdf" },
+    { name = "unstructured", extra = ["pdf"] },
+]
 dev = [
     { name = "ipykernel" },
     { name = "pre-commit" },
@@ -1424,6 +1428,10 @@ requires-dist = [
 provides-extras = ["dev", "book"]
 
 [package.metadata.requires-dev]
+book = [
+    { name = "pymupdf", specifier = ">=1.25.1" },
+    { name = "unstructured", extras = ["pdf"], specifier = ">=0.16.13" },
+]
 dev = [
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "pre-commit", specifier = ">=4.0.1" },

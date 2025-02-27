@@ -4,8 +4,8 @@ from typing import Literal
 import fire
 import fitz
 from unstructured.partition.pdf import partition_pdf
-from unstructured.partition.auto import partition       
-from .models import Book, PDFMetadata, Section
+from unstructured.partition.auto import partition
+from .models import Book, PDFMetadata
 from .toc import (
     sanitize_toc,
     extract_toc,
@@ -24,7 +24,6 @@ from .markdown_utils import get_section_text_map, convert_pdf_to_markdown
 from .doc_type import is_two_column_scientific_paper
 import structlog
 import json
-from glob import glob
 from rich.console import Console
 from rich.table import Table
 
@@ -128,13 +127,13 @@ def from_pdf_path(pdf_path: str) -> Book:
 def parse_non_pdf(file_path: str):
     """Parse a non-PDF file using unstructured partition and return sections and chunks."""
     logger.info("Processing file:", file_path=file_path)
-    
+
     try:
         # Create temp output directory for JSON
         temp_base_dir = os.path.join(os.getcwd(), "temp_processing")
         output_dir = os.path.join(temp_base_dir, "output")
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Get elements using unstructured's auto partition
         elements = partition(
             file_path,
@@ -153,8 +152,12 @@ def parse_non_pdf(file_path: str):
                     "metadata": {
                         "filename": os.path.basename(file_path),
                         "filetype": os.path.splitext(file_path)[1][1:],
-                        "page_number": element_dict.get("metadata", {}).get("page_number"),
-                        "languages": element_dict.get("metadata", {}).get("languages", []),
+                        "page_number": element_dict.get("metadata", {}).get(
+                            "page_number"
+                        ),
+                        "languages": element_dict.get("metadata", {}).get(
+                            "languages", []
+                        ),
                     },
                 }
                 chunks.append(clean_chunk)
@@ -169,19 +172,16 @@ def parse_non_pdf(file_path: str):
         table = Table(title="Extracted Chunks", padding=1)
         table.add_column("Chunk #", justify="right", style="cyan")
         table.add_column("Text", style="green", no_wrap=False)
-        
+
         for i, chunk in enumerate(chunks, 1):
-            table.add_row(
-                str(i),
-                chunk.get("text", "")
-            )
+            table.add_row(str(i), chunk.get("text", ""))
         console.print(table)
 
         # Create sections from chunks
-        sections = [{
-            "content": chunk["text"],
-            "metadata": chunk["metadata"]
-        } for chunk in chunks]
+        sections = [
+            {"content": chunk["text"], "metadata": chunk["metadata"]}
+            for chunk in chunks
+        ]
 
         return sections, chunks
 

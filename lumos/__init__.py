@@ -7,6 +7,7 @@ from lumos.lumos import (
 )
 from lumos.utils.client import LumosClient
 from lumos import lumos
+from lumos.book import book_parser
 
 __all__ = [
     "call_ai",
@@ -16,4 +17,5 @@ __all__ = [
     "describe_image",
     "LumosClient",
     "lumos",
+    "book_parser",
 ]

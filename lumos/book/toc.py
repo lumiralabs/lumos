@@ -309,12 +309,7 @@ def edit_toc(toc_list: list[list], level: int | None = None) -> list[list]:
     return [entry for entry in toc_list if entry[0] <= level]
 
 
-## CLI
-
-# class CLI:
-
-
-def cli(
+def print_toc_from_pdf(
     pdf_path: str,
     level: int | None = None,
     type: Literal["chapter"] | None = None,
@@ -330,6 +325,17 @@ def cli(
         TOC(sections=sections, total_pages=total_pages), type=type
     )
     rich_view_toc_sections(toc_sanitized.sections)
+
+
+## CLI
+
+
+def cli(
+    pdf_path: str,
+    level: int | None = None,
+    type: Literal["chapter"] | None = None,
+):
+    print_toc_from_pdf(pdf_path, level, type)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,12 @@ The Book Parser extracts useful entities like:
 2. Section Data
 3. Chunks
 
+
+## Install
+```bash
+pip install lumira-lumos[book]
+```
+
 ## 1. Table of Contents
 ```bash
 python -m lumos.book.toc path/to/book.pdf
@@ -15,7 +21,7 @@ python -m lumos.book.toc path/to/book.pdf
 ```python
 from lumos import book_parser
 
-book_parser.toc("path/to/book.pdf", level=2)
+book_parser.print_toc_from_pdf("path/to/book.pdf", level=2)
 ```
 ```
 Table of Contents
