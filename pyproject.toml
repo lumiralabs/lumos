@@ -40,6 +40,7 @@ packages = ["lumos"]
 [dependency-groups]
 dev = [
     "ipykernel>=6.29.5",
+    "mkdocs-material>=9.6.5",
     "pre-commit>=4.0.1",
     "pydantic-ai>=0.0.24",
     "pytest>=8.3.4",

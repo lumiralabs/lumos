@@ -11,7 +11,7 @@ The Book Parser extracts useful entities like:
 
 ## Install
 ```bash
-pip install lumira-lumos[book]
+pip install 'lumira-lumos[book]'
 ```
 
 ## 1. Table of Contents

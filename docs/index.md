@@ -5,7 +5,7 @@ Simple utils for building AI apps. Available as Python API and deployable with s
 ## Install
 ```bash
 pip install lumira-lumos
-pip install lumira-lumos[book] # for book parsing utilities
+pip install 'lumira-lumos[book]' # for book parsing utilities
 ```
 
 
