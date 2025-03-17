@@ -7,8 +7,10 @@ import structlog
 import fire
 from .visualizer import rich_view_toc_sections
 from lumos import lumos
-from .toc import TOC, toc_list_to_toc_sections
 from .pdf_utils import extract_pdf_pages_as_images
+from .models import TOC
+from .toc_common import toc_list_to_toc_sections  # Import from new file
+
 
 logger = structlog.get_logger()
 

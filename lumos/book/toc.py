@@ -7,6 +7,8 @@ from typing import Literal
 import structlog
 import fire
 from .visualizer import rich_view_toc_sections
+from .toc_ai import extract_toc_ai  # Import AI-based TOC extraction
+from .toc_common import toc_list_to_toc_sections
 
 logger = structlog.get_logger(__name__)
 
@@ -88,7 +90,7 @@ def extract_chapters(sections: list[Section]) -> list[Section]:
         chapters = extract_chapters_ai(sections)
     return chapters
 
-
+'''
 def toc_list_to_toc_sections(
     toc: list[list], total_pages: int | None = None
 ) -> list[Section]:
@@ -180,7 +182,7 @@ def toc_list_to_toc_sections(
     # Kick off recursion at level=1. If total_pages is None, we pass None as parent_end_page.
     top_level_sections, _ = recursive_parse(1, toc, 0, total_pages)
     return top_level_sections
-
+'''
 
 def toc_sections_to_toc_list(sections: list[Section]) -> list[list]:
     """Convert a hierarchical structure of sections to a flat TOC list."""
@@ -246,6 +248,7 @@ def reset_section_levels(
 # -----------------------------------------------------------------------------
 
 
+
 def extract_toc_from_md(md_path: str) -> list[list[int | str]]:
     with open(md_path, "r") as f:
         lines = f.readlines()
@@ -273,20 +276,22 @@ def extract_toc(pdf_path: str) -> TOC:
 
     toc_list = extract_toc_from_pdf_metadata(pdf_path)
 
-    # if not toc_list:
-    #     logger.info("no_toc_found_in_metadata", pdf_path=pdf_path)
-    #     logger.info("attempting_ai_extraction", pdf_path=pdf_path)
-    #     toc_list = extract_toc_ai(pdf_path)
-
     if not toc_list:
-        raise ValueError(f"Could not extract table of contents from {pdf_path}")
+        logger.warning("no_toc_found_in_metadata", pdf_path=pdf_path)
+        logger.info("attempting_ai_extraction")
+
+        try:
+            toc_list, toc_page_range = extract_toc_ai(pdf_path)
+            logger.info("toc_extracted_using_ai", toc_entries=len(toc_list))
+        except Exception as e:
+            logger.error("ai_extraction_failed", error=str(e))
+            raise ValueError(f"Could not extract TOC from metadata or AI for {pdf_path}")
 
     with fitz.open(pdf_path) as doc:
         total_pages = len(doc)
 
     sections = toc_list_to_toc_sections(toc_list, total_pages)
-    return TOC(sections=sections)
-
+    return TOC(sections=sections, total_pages=total_pages)
 
 def sanitize_toc(toc: TOC, type: Literal["chapter"] | None = None) -> TOC:
     """Sanitize the TOC by removing unnecessary sections and subsections."""
@@ -307,6 +312,33 @@ def edit_toc(toc_list: list[list], level: int | None = None) -> list[list]:
         return toc_list
 
     return [entry for entry in toc_list if entry[0] <= level]
+
+
+def print_toc_from_pdf(
+    pdf_path: str,
+    level: int | None = None,
+    type: Literal["chapter"] | None = None,
+):
+    with fitz.open(pdf_path) as doc:
+        total_pages = len(doc)
+    
+    try:
+        toc_list = extract_toc_from_pdf_metadata(pdf_path)
+        if not toc_list:
+            raise ValueError("No TOC metadata found.")
+    except ValueError:
+        logger.warning("Falling back to AI-based TOC extraction", pdf_path=pdf_path)
+        toc_list, _ = extract_toc_ai(pdf_path)
+
+    for item in toc_list:
+        print(item)
+
+    toc_list = edit_toc(toc_list, level=level)
+    sections = toc_list_to_toc_sections(toc_list, total_pages)
+    toc_sanitized = sanitize_toc(
+        TOC(sections=sections, total_pages=total_pages), type=type
+    )
+    rich_view_toc_sections(toc_sanitized.sections)
 
 
 def print_toc_from_pdf(
