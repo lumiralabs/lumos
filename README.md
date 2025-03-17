@@ -11,12 +11,14 @@ uv sync --all-groups && uv pip install -e .
 pip install lumira-lumos
 ```
 
-## Start Server
+## Start Server with docker
 ```
 docker-compose up
 ```
-
-
+## Lumos Server 
+```
+uvicorn lumos.server.app:app --host 0.0.0.0 --port 10000
+```
 ## Python API
 
 ### 1. Structured Outputs
