@@ -7,6 +7,7 @@ import structlog
 import fire
 from .visualizer import rich_view_toc_sections
 from lumos import lumos
+from .toc import TOC
 from .pdf_utils import extract_pdf_pages_as_images
 from .models import TOC
 from .toc_common import toc_list_to_toc_sections  # Import from new file
@@ -364,7 +365,7 @@ def extract_text_image_pairs(
     return content
 
 
-def detect_toc_pages(pdf_path: str, max_pages: int = 15) -> list[int]:
+def detect_toc_pages(pdf_path: str, max_pages: int = 20) -> list[int]:
     """
     Detect which pages in the first max_pages contain table of contents.
 
@@ -527,7 +528,7 @@ def detect_page_for_title(
 class CLI:
     """CLI commands for working with book TOCs"""
 
-    def detect(self, pdf_path: str, max_pages: int = 15) -> list[int]:
+    def detect(self, pdf_path: str, max_pages: int = 20) -> list[int]:
         pages = detect_toc_pages(pdf_path, max_pages)
         print(pages)
 

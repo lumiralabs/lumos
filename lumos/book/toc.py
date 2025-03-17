@@ -248,7 +248,6 @@ def reset_section_levels(
 # -----------------------------------------------------------------------------
 
 
-
 def extract_toc_from_md(md_path: str) -> list[list[int | str]]:
     with open(md_path, "r") as f:
         lines = f.readlines()
@@ -333,24 +332,6 @@ def print_toc_from_pdf(
     for item in toc_list:
         print(item)
 
-    toc_list = edit_toc(toc_list, level=level)
-    sections = toc_list_to_toc_sections(toc_list, total_pages)
-    toc_sanitized = sanitize_toc(
-        TOC(sections=sections, total_pages=total_pages), type=type
-    )
-    rich_view_toc_sections(toc_sanitized.sections)
-
-
-def print_toc_from_pdf(
-    pdf_path: str,
-    level: int | None = None,
-    type: Literal["chapter"] | None = None,
-):
-    with fitz.open(pdf_path) as doc:
-        total_pages = len(doc)
-    toc_list = extract_toc_from_pdf_metadata(pdf_path)
-    for item in toc_list:
-        print(item)
     toc_list = edit_toc(toc_list, level=level)
     sections = toc_list_to_toc_sections(toc_list, total_pages)
     toc_sanitized = sanitize_toc(
