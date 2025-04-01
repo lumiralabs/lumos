@@ -13,11 +13,14 @@ The Book Parser extracts useful entities like:
 ```bash
 pip install 'lumira-lumos[book]'
 ```
+This will install the lumos package with specific book parsing capabilities.
 
 ## 1. Table of Contents
 ```bash
 python -m lumos.book.toc path/to/book.pdf
 ```
+This will extract the table of contents for the document and present it in a hierarchical manner based on levels and sub-levels.
+
 ```python
 from lumos import book_parser
 
@@ -60,6 +63,8 @@ Table of Contents
 ```bash
 python -m lumos.book.parser path/to/book.pdf sections
 ```
+This will divide the content of the document into sections based on the table of contents.
+
 ```python
 from lumos import book_parser
 
@@ -117,6 +122,8 @@ sections = book_parser.section("path/to/book.pdf")
 ```bash
 python -m lumos.book.parser path/to/book.pdf chunks
 ```
+This will create meaningful chunks for the document in order to better capture the context of the given document.
+
 ```python
 from lumos import book_parser
 
