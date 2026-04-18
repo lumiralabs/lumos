@@ -23,7 +23,6 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --extra book --no-install-project
 
-# Now copy the source and install the project itself (editable).
 COPY . .
 RUN uv sync --frozen --no-dev --extra book
 

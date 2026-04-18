@@ -16,18 +16,16 @@ dependencies = [
     "fastapi>=0.115.6",
     "structlog>=25.1.0",
     "python-magic>=0.4.27",
-    "fitz>=0.0.1.dev2",
     "pymupdf>=1.25.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     "ipykernel>=6.29.5",
-    "pre-commit>=4.0.1", 
+    "pre-commit>=4.0.1",
     "pytest>=8.3.4"
 ]
 book = [
-    "pymupdf>=1.25.1",
     "unstructured[pdf]>=0.16.13"
 ]
 
@@ -48,6 +46,5 @@ dev = [
     "pytest>=8.3.4",
 ]
 book = [
-    "pymupdf>=1.25.1",
     "unstructured[pdf]>=0.16.13"
 ]
