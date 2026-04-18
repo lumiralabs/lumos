@@ -1,4 +1,5 @@
 __pycache__
+**/__pycache__
 *.pyc
 *.pyo
 *.pyd
@@ -17,6 +18,12 @@ coverage.xml
 *.log
 .pytest_cache
 .ipynb_checkpoints
+**/.ipynb_checkpoints
 *.ipynb
 .git
-.gitignore 
+.gitignore
+site/
+dist/
+docs/
+_experimental/
+tests/
