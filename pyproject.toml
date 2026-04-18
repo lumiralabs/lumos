@@ -27,7 +27,11 @@ dev = [
     "pytest>=8.3.4"
 ]
 book = [
-    "unstructured[pdf]>=0.16.13"
+    "unstructured[pdf]>=0.16.13",
+    # torch/torchvision are pulled in by unstructured[pdf]; listed here
+    # so the pytorch-cpu source override below applies to them.
+    "torch>=2.0",
+    "torchvision",
 ]
 
 [build-system]
@@ -36,6 +40,19 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["lumos"]
+
+# ── CPU-only torch on Linux ───────────────────────────────────────
+# On Linux (our Docker runtime) pull torch/torchvision from PyTorch's
+# CPU wheel index. On macOS (local dev) keep the default so MPS works.
+# This avoids ~2–4 GB of nvidia-cuda-* transitive deps in our image.
+[tool.uv.sources]
+torch       = [{ index = "pytorch-cpu", marker = "platform_system == 'Linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "platform_system == 'Linux'" }]
+
+[[tool.uv.index]]
+name     = "pytorch-cpu"
+url      = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 
 [dependency-groups]
@@ -47,5 +64,9 @@ dev = [
     "pytest>=8.3.4",
 ]
 book = [
-    "unstructured[pdf]>=0.16.13"
+    "unstructured[pdf]>=0.16.13",
+    # torch/torchvision are pulled in by unstructured[pdf]; listed here
+    # so the pytorch-cpu source override below applies to them.
+    "torch>=2.0",
+    "torchvision",
 ]
