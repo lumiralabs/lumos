@@ -41,11 +41,15 @@ hit "GET /"            GET  "/"        200
 hit "GET /healthz"     GET  "/healthz" 200
 
 echo
-echo "── Auth checks (missing key must 401) ──"
+echo "── Auth checks (valid body, missing key must 401) ──"
+# Note: FastAPI validates the Pydantic body before the decorator runs,
+# so we must send a schema-valid payload to actually hit the auth check.
 hit "POST /generate (no key)" POST "/generate" 401 \
-  -H "Content-Type: application/json" -d '{}'
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"hi"}],"response_schema":null}'
 hit "POST /embed (no key)"    POST "/embed"    401 \
-  -H "Content-Type: application/json" -d '{}'
+  -H "Content-Type: application/json" \
+  -d '{"inputs":"hi"}'
 
 echo
 echo "── Authed endpoints (with key) ──"
@@ -62,6 +66,15 @@ hit "POST /generate (valid key)" POST "/generate" 200 \
     "response_schema":{"type":"object","properties":{"greeting":{"type":"string"}},"required":["greeting"]},
     "model":"gpt-4o-mini"
   }'
+
+# ── Book parser (only if PDF_PATH is set) ────────────────────────
+if [[ -n "${PDF_PATH:-}" && -f "$PDF_PATH" ]]; then
+  echo
+  echo "── Book parser (using $PDF_PATH) ──"
+  hit "POST /book/parse-pdf (file upload)" POST "/book/parse-pdf" 200 \
+    -H "X-API-Key: $LUMOS_API_KEY" \
+    -F "file=@$PDF_PATH"
+fi
 
 echo
 echo "── Summary: $pass passed, $fail failed ──"
