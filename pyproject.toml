@@ -17,6 +17,7 @@ dependencies = [
     "structlog>=25.1.0",
     "python-magic>=0.4.27",
     "pymupdf>=1.25.1",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
