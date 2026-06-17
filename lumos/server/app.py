@@ -78,7 +78,7 @@ def _json_schema_to_pydantic_types(
 
 
 @app.post("/generate")
-@require_api_key
+#@require_api_key
 async def create_chat_completion(request: Request, ai_request: AIRequest):
     """
     Examples can only be used if response_schema is provided, and are in json format
@@ -116,7 +116,7 @@ async def create_chat_completion(request: Request, ai_request: AIRequest):
 
 
 @app.post("/embed")
-@require_api_key
+#@require_api_key
 async def embed(request: Request, embed_request: EmbedRequest):
     return lumos.get_embedding(embed_request.inputs, embed_request.model)
 
@@ -132,7 +132,7 @@ async def root(request: Request):
 
 
 @app.post("/book/parse-pdf")
-@require_api_key
+#@require_api_key
 async def process_pdf(
     request: Request,
     pdf_request: PDFRequest | None = None,
@@ -212,7 +212,7 @@ async def process_pdf(
 
 
 @app.post("/book/parse-file")
-@require_api_key
+#@require_api_key
 async def process_file(
     request: Request,
     file: UploadFile = File(...),
